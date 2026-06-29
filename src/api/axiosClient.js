@@ -2,7 +2,7 @@ import axios from "axios";
 import { ENV } from "../config/env";
 import { setupInterceptors } from "./interceptors";
 
-const axiosClients = axios.create({
+const axiosClient = axios.create({
     baseURL : ENV.APP_API_URL,
     timeout : ENV.TIMEOUT,
     headers :{
@@ -12,6 +12,6 @@ const axiosClients = axios.create({
 });
 
 // Register intercept
-setupInterceptors(axiosClients);
+setupInterceptors(axiosClient);
 
-export default axiosClients;
+export default axiosClient;

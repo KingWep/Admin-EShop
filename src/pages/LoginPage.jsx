@@ -1,17 +1,38 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../api/modules/auth.api';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const [form, setForm] = useState({
+    CriteriaValue: "",
+    Password: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  }
+  const handleLogin = async (e) => {
     e.preventDefault();
-    // In a real app, perform authentication here.
-    // For now, redirect to the dashboard.
-    navigate('/dashboard');
+
+    try {
+      const res = await login(form);
+      console.log("Login Response: ", res);
+      const token = res.access_token;
+      if (!token) {
+        console.log("Invalid response from server")
+        return;
+      }
+      localStorage.setItem("accessToken", token);
+      navigate("/dashboard");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -53,9 +74,10 @@ export default function LoginPage() {
             </label>
             <input
               id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              name="CriteriaValue"
+              type="text"
+              value={form.CriteriaValue}
+              onChange={handleChange}
               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
               placeholder="Email or Username"
               required
@@ -73,16 +95,17 @@ export default function LoginPage() {
             </div>
             <input
               id="password"
+              name="Password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={form.Password}
+              onChange={handleChange}
               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
-              placeholder="••••••••"
+              placeholder="strong_password"
               required
             />
           </div>
 
-          <div className="flex items-center">
+          {/* <div className="flex items-center">
             <input
               id="remember_me"
               type="checkbox"
@@ -93,7 +116,7 @@ export default function LoginPage() {
             <label htmlFor="remember_me" className="ml-2 block text-sm text-slate-400 cursor-pointer select-none">
               Remember me
             </label>
-          </div>
+          </div> */}
 
           <button
             type="submit"

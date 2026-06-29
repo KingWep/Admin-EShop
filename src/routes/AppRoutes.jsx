@@ -33,6 +33,7 @@ export default function AppRoutes() {
     <Routes>
       {/* ── Public routes ── */}
       <Route path="/" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage />} />
 
       {/* ── All admin screens share the AdminLayout (sidebar + topbar + Outlet) ── */}
       <Route path="/dashboard" element={<AdminLayout />}>

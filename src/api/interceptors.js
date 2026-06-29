@@ -18,18 +18,17 @@ export const setupInterceptors = (axiosClients) =>{
         (error) => {
             switch(error.response?.status){
                 case 401:
-                    localStorage.removeItem("accessToken");
-                    window.location.href = "/login";
-                    break;
                 case 403:
                     localStorage.removeItem("accessToken");
-                    window.location.href = "/login";
+                    if (window.location.pathname !== '/' && window.location.pathname !== '/login') {
+                        window.location.href = "/login";
+                    }
                     break;
                 case 404:
-                    window.location.href = "/404";
+                    // window.location.href = "/404";
                     break;
                 case 500:
-                    window.location.href = "/500";
+                    // window.location.href = "/500";
                     break;
             }
             return Promise.reject(error);
