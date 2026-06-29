@@ -167,13 +167,8 @@ export default function PaymentDetailsTable({ payments, stats }) {
 
   return (
     <div className="space-y-5">
-
       {/* ── Overview Stats ── */}
       <div>
-        <div className="mb-3">
-          <h2 className="text-base font-semibold text-slate-800">Payment Overview</h2>
-          <p className="text-xs text-slate-400">Summary of all payments for the selected period</p>
-        </div>
         <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
           <OverviewCard
             icon="💳"

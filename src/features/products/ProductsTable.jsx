@@ -2,14 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Table from '../../components/ui/Table';
 import Badge from '../../components/ui/Badge';
-import Button from '../../components/ui/Button';
 import DeleteButton from '../../components/ui/DeleteButton';
-import { ConfirmModal } from '../../components/ui/Modal';
 import { formatCurrency } from '../../utils/formatters';
 import { PRODUCT_STATUSES } from '../../utils/constants';
 import { useModal } from '../../hooks/useModal';
 import {
-  HiOutlinePencilSquare, HiOutlineTrash, HiPlus,
+  HiOutlinePencilSquare
 } from 'react-icons/hi2';
 
 export default function ProductsTable({ products, onDelete }) {
@@ -100,18 +98,6 @@ export default function ProductsTable({ products, onDelete }) {
         sortDir={sortDir}
         onSort={handleSort}
       />
-      {/* 2. Swap your old action button with DeleteButton */}
-      {/* <DeleteButton
-        onConfirm={() => onDelete?.(row.id)}
-        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
-      /> */}
-      {/* <ConfirmModal
-        isOpen={confirmModal.isOpen}
-        onClose={confirmModal.close}
-        onConfirm={handleConfirmDelete}
-        loading={deleting}
-        message={`Are you sure you want to delete "${confirmModal.data?.name}"? This action cannot be undone.`}
-      /> */}
     </>
   );
 }

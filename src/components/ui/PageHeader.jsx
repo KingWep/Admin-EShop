@@ -6,7 +6,7 @@ export default function PageHeader({ title, description, crumbs, stats = [], chi
     <div className="mb-6 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">{title}</h2>
+          <h2 className="text-xl font-bold text-slate-900">{title}</h2>
           {description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
           {crumbs && crumbs.length > 0 && (
             <div className="mt-2 flex items-center gap-2 text-xs font-medium text-slate-500">
