@@ -19,13 +19,13 @@ export default function BrandsGrid({ brands, onEdit, onDelete }) {
             <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
               <button
                 onClick={() => onEdit?.(brand)}
-                className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 bg-yellow-100 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
               >
                 <HiOutlinePencilSquare className="h-4 w-4" />
               </button>
               <DeleteButton
                 onConfirm={() => onDelete?.(brand.id)}
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 bg-pink-100 hover:bg-red-50 hover:text-red-600 transition-colors"
               />
             </div>
           </div>

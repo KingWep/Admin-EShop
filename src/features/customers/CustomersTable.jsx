@@ -38,8 +38,8 @@ export default function CustomersTable({ customers }) {
     { key: 'actions', label: '', align: 'right',
       render: (_, row) => (
         <Link
-          to={`/customers/${row.id}`}
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+          to={`/dashboard/customers/${row.id}`}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 bg-cyan-100 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
           title="View customer"
         >
           <HiOutlineEye className="h-4 w-4" />

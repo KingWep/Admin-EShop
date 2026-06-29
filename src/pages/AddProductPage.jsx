@@ -12,7 +12,7 @@ export default function AddProductPage() {
     // Simulate API call
     await new Promise(r => setTimeout(r, 1000));
     setLoading(false);
-    navigate('/products');
+    navigate('/dashboard/products');
   };
 
   return (
@@ -25,7 +25,7 @@ export default function AddProductPage() {
       <div className="card max-w-3xl">
         <ProductForm
           onSubmit={handleSubmit}
-          onCancel={() => navigate('/products')}
+          onCancel={() => navigate('/dashboard/products')}
           loading={loading}
         />
       </div>

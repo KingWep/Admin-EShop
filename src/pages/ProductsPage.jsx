@@ -32,7 +32,7 @@ export default function ProductsPage() {
         crumbs={[{ label: 'Dashboard', path: '/' }, { label: 'Products' }]}
         stats={productStats}
       >
-        <Link to="/products/add">
+        <Link to="/dashboard/products/add">
           <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
             <HiPlus className="h-4 w-4" />
             Add Product

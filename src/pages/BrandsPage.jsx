@@ -26,10 +26,10 @@ export default function BrandsPage() {
       <PageHeader
         title="Brands"
         description="Manage product brands and partnerships."
-        crumbs={[{ label: 'Dashboard', path: '/' }, { label: 'Brands' }]}
+        crumbs={[{ label: 'Dashboard', path: '/dashboard' }, { label: 'Brands' }]}
         stats={brandStats}
       >
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm" onClick={() => navigate('/brands/add')}>
+        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm" onClick={() => navigate('/dashboard/brands/add')}>
           <HiPlus className="h-4 w-4" />
           Add Brand
         </Button>
@@ -37,7 +37,7 @@ export default function BrandsPage() {
 
       <BrandsGrid
         brands={brands}
-        onEdit={(brand) => navigate(`/brands/edit/${brand.id}`)}
+        onEdit={(brand) => navigate(`/dashboard/brands/edit/${brand.id}`)}
         onDelete={handleDelete}
       />
     </div>

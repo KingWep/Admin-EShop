@@ -33,7 +33,7 @@ export default function Sidebar() {
   const location = useLocation();
 
   const isActive = (path) =>
-    path === '/' ? location.pathname === '/' : location.pathname.startsWith(path);
+    path === '/dashboard' ? location.pathname === '/dashboard' : location.pathname.startsWith(path);
 
   return (
     <>

@@ -20,13 +20,13 @@ export default function NotFoundPage() {
 
       <div className="mt-8 flex items-center gap-3">
         <Link
-          to="/"
+          to="/dashboard"
           className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
         >
           ← Back to Dashboard
         </Link>
         <Link
-          to="/orders"
+          to="/dashboard/orders"
           className="rounded-xl border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
         >
           View Orders

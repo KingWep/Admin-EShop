@@ -141,14 +141,14 @@ export default function Topbar() {
                 <p className="text-xs text-slate-500">john@shopadmin.com</p>
               </div>
               <button
-                onClick={() => { setProfileOpen(false); navigate('/settings'); }}
+                onClick={() => { setProfileOpen(false); navigate('/dashboard/settings'); }}
                 className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
               >
                 <HiOutlineUser className="h-4 w-4 text-slate-400" />
                 Profile
               </button>
               <button
-                onClick={() => { setProfileOpen(false); navigate('/settings'); }}
+                onClick={() => { setProfileOpen(false); navigate('/dashboard/settings'); }}
                 className="flex w-full items-center gap-2.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50"
               >
                 <HiOutlineCog6Tooth className="h-4 w-4 text-slate-400" />

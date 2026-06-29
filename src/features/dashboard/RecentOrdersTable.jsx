@@ -12,7 +12,7 @@ export default function RecentOrdersTable({ orders }) {
           <p className="text-sm text-slate-500">Latest customer orders</p>
         </div>
         <Link
-          to="/orders"
+          to="/dashboard/orders"
           className="text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors"
         >
           View all →

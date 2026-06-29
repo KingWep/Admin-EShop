@@ -43,15 +43,15 @@ export default function AddBrandPage() {
           <h2 className="text-2xl font-bold text-slate-900">{isEdit ? 'Edit Brand' : 'Add Brand'}</h2>
           {/* Breadcrumbs for page header */}
           <div className="mt-1 flex items-center gap-2 text-xs font-medium text-slate-500">
-            <Link to="/" className="hover:text-blue-600 transition-colors">Dashboard</Link>
+            <Link to="/dashboard" className="hover:text-blue-600 transition-colors">Dashboard</Link>
             <span className="text-slate-300">›</span>
-            <Link to="/brands" className="hover:text-blue-600 transition-colors">Brands</Link>
+            <Link to="/dashboard/brands" className="hover:text-blue-600 transition-colors">Brands</Link>
             <span className="text-slate-300">›</span>
             <span className="text-slate-400">{isEdit ? 'Edit Brand' : 'Add Brand'}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="secondary" onClick={() => navigate('/brands')} className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm">
+          <Button variant="secondary" onClick={() => navigate('/dashboard/brands')} className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm">
             Cancel
           </Button>
           <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">

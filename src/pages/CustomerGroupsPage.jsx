@@ -18,7 +18,7 @@ export default function CustomerGroupsPage() {
         ]}
       >
         <button 
-          onClick={() => navigate('/customer-groups/add')}
+          onClick={() => navigate('/dashboard/customer-groups/add')}
           className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 transition-colors"
         >
           <HiPlus className="h-4 w-4" />
@@ -30,7 +30,7 @@ export default function CustomerGroupsPage() {
       <CustomerGroupsTable
         groups={customerGroups}
         stats={customerGroupStats}
-        onEdit={(group) => navigate(`/customer-groups/edit/${group.id}`)}
+        onEdit={(group) => navigate(`/dashboard/customer-groups/edit/${group.id}`)}
       />
     </div>
   );

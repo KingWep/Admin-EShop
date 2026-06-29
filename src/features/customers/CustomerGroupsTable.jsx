@@ -247,20 +247,20 @@ export default function CustomerGroupsTable({ groups, stats, onEdit }) {
                     <div className="flex items-center gap-1">
                       <button
                         title="View"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 bg-cyan-100 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                       >
                         <HiOutlineEye className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => onEdit?.(g)}
                         title="Edit"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-amber-50 hover:text-amber-600 transition-colors"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 bg-yellow-100 hover:bg-amber-50 hover:text-amber-600 transition-colors"
                       >
                         <HiOutlinePencil className="h-4 w-4" />
                       </button>
                       <DeleteButton
                         onConfirm={() => onDelete?.(g.id)}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 bg-pink-100 hover:bg-red-50 hover:text-red-600 transition-colors"
                       />
                     </div>
                   </td>

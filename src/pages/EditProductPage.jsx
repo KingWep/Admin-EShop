@@ -15,7 +15,7 @@ export default function EditProductPage() {
     setLoading(true);
     await new Promise(r => setTimeout(r, 1000));
     setLoading(false);
-    navigate('/products');
+    navigate('/dashboard/products');
   };
 
   if (!product) {
@@ -24,7 +24,7 @@ export default function EditProductPage() {
         <h3 className="text-lg font-semibold text-slate-700">Product not found</h3>
         <p className="mt-1 text-sm text-slate-400">The product with ID #{id} does not exist.</p>
         <button
-          onClick={() => navigate('/products')}
+          onClick={() => navigate('/dashboard/products')}
           className="mt-4 text-sm text-indigo-600 hover:underline"
         >
           ← Back to Products
@@ -44,7 +44,7 @@ export default function EditProductPage() {
         <ProductForm
           initialData={product}
           onSubmit={handleSubmit}
-          onCancel={() => navigate('/products')}
+          onCancel={() => navigate('/dashboard/products')}
           loading={loading}
         />
       </div>

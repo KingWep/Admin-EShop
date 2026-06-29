@@ -20,10 +20,10 @@ export default function CategoriesPage() {
     <div>
       <PageHeader 
         title="Categories" 
-        crumbs={[{ label: 'Dashboard', path: '/' }, { label: 'Products', path: '/products' }, { label: 'Categories' }]}
+        crumbs={[{ label: 'Dashboard', path: '/dashboard' }, { label: 'Products', path: '/dashboard/products' }, { label: 'Categories' }]}
         stats={categoryStats}
       >
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm" onClick={() => navigate('/categories/add')}>
+        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm" onClick={() => navigate('/dashboard/categories/add')}>
           <HiPlus className="h-4 w-4" />
           Add Category
         </Button>
@@ -31,7 +31,7 @@ export default function CategoriesPage() {
 
       <CategoriesTable
         categories={categories}
-        onEdit={(cat) => navigate(`/categories/edit/${cat.id}`)}
+        onEdit={(cat) => navigate(`/dashboard/categories/edit/${cat.id}`)}
         onDelete={handleDelete}
       />
     </div>

@@ -11,7 +11,7 @@ export default function LoginPage() {
     e.preventDefault();
     // In a real app, perform authentication here.
     // For now, redirect to the dashboard.
-    navigate('/');
+    navigate('/dashboard');
   };
 
   return (

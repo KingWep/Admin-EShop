@@ -41,7 +41,7 @@ export default function OrdersTable({ orders }) {
     { key: 'actions', label: '', align: 'right',
       render: (_, row) => (
         <Link
-          to={`/orders/${row.id.replace('#', '')}`}
+          to={`/dashboard/orders/${row.id.replace('#', '')}`}
           className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
           title="View order"
         >

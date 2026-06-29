@@ -45,17 +45,17 @@ export default function AddCategoryPage() {
           <h2 className="text-2xl font-bold text-slate-900">{isEdit ? 'Edit Category' : 'Add Category'}</h2>
           {/* Breadcrumbs */}
           <div className="mt-1 flex items-center gap-2 text-xs font-medium text-slate-500">
-            <Link to="/" className="hover:text-blue-600 transition-colors">Dashboard</Link>
+            <Link to="/dashboard" className="hover:text-blue-600 transition-colors">Dashboard</Link>
             <span className="text-slate-300">›</span>
-            <Link to="/products" className="hover:text-blue-600 transition-colors">Products</Link>
+            <Link to="/dashboard/products" className="hover:text-blue-600 transition-colors">Products</Link>
             <span className="text-slate-300">›</span>
-            <Link to="/categories" className="hover:text-blue-600 transition-colors">Categories</Link>
+            <Link to="/dashboard/categories" className="hover:text-blue-600 transition-colors">Categories</Link>
             <span className="text-slate-300">›</span>
             <span className="text-slate-400">{isEdit ? 'Edit Category' : 'Add Category'}</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="secondary" onClick={() => navigate('/categories')} className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm">
+          <Button variant="secondary" onClick={() => navigate('/dashboard/categories')} className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm">
             Cancel
           </Button>
           <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
