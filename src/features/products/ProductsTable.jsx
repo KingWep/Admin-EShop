@@ -9,6 +9,7 @@ import { useModal } from '../../hooks/useModal';
 import {
   HiOutlinePencilSquare
 } from 'react-icons/hi2';
+import Pagination from '../../components/ui/Pagination';
 
 export default function ProductsTable({ products, onDelete }) {
   const navigate = useNavigate();
@@ -83,8 +84,8 @@ export default function ProductsTable({ products, onDelete }) {
           <DeleteButton
             onConfirm={() => onDelete?.(row.id)}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 bg-pink-100 hover:bg-red-50 hover:text-red-600 transition-colors"
-          />
-        </div>
+          />      
+        </div> 
       ),
     },
   ];
@@ -98,6 +99,7 @@ export default function ProductsTable({ products, onDelete }) {
         sortDir={sortDir}
         onSort={handleSort}
       />
+      <Pagination />
     </>
   );
 }

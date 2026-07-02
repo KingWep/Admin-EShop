@@ -35,7 +35,7 @@ export default function AddCustomerGroupPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">{isEdit ? 'Edit Customer Group' : 'Add Customer Group'}</h2>
+          <h2 className="text-xl font-bold text-slate-900">{isEdit ? 'Edit Customer Group' : 'Add Customer Group'}</h2>
           {/* Breadcrumbs */}
           <div className="mt-1 flex items-center gap-2 text-xs font-medium text-slate-500">
             <Link to="/dashboard" className="hover:text-blue-600 transition-colors">Dashboard</Link>

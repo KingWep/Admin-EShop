@@ -18,8 +18,8 @@ export default function CategoriesPage() {
 
   return (
     <div>
-      <PageHeader 
-        title="Categories" 
+      <PageHeader
+        title="Categories"
         crumbs={[{ label: 'Dashboard', path: '/dashboard' }, { label: 'Products', path: '/dashboard/products' }, { label: 'Categories' }]}
         stats={categoryStats}
       >

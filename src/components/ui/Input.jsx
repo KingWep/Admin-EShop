@@ -1,6 +1,19 @@
 import { forwardRef } from 'react';
 import { cn } from '../../utils/cn';
 
+/** Renders a label string, turning a trailing ' *' into a red asterisk. */
+function renderLabel(label) {
+  if (!label) return null;
+  const hasStar = label.trimEnd().endsWith('*');
+  const base = hasStar ? label.trimEnd().slice(0, -1).trimEnd() : label;
+  return (
+    <>
+      {base}
+      {hasStar && <span className="ml-0.5 text-red-500">*</span>}
+    </>
+  );
+}
+
 /**
  * Input component with label, helper text, error state, and optional icons.
  */
@@ -26,8 +39,8 @@ const Input = forwardRef(function Input(
     <div className="form-group">
       {label && (
         <label htmlFor={inputId} className="form-label">
-          {label}
-          {required && <span className="ml-0.5 text-red-500">*</span>}
+          {renderLabel(label)}
+          {required && !label.trimEnd().endsWith('*') && <span className="ml-0.5 text-red-500">*</span>}
         </label>
       )}
 
@@ -91,8 +104,8 @@ export function Textarea({ label, error, helperText, className, id, required, ro
     <div className="form-group">
       {label && (
         <label htmlFor={inputId} className="form-label">
-          {label}
-          {required && <span className="ml-0.5 text-red-500">*</span>}
+          {renderLabel(label)}
+          {required && !label.trimEnd().endsWith('*') && <span className="ml-0.5 text-red-500">*</span>}
         </label>
       )}
       <textarea
@@ -122,8 +135,8 @@ export function Select({ label, error, helperText, children, className, id, requ
     <div className="form-group">
       {label && (
         <label htmlFor={inputId} className="form-label">
-          {label}
-          {required && <span className="ml-0.5 text-red-500">*</span>}
+          {renderLabel(label)}
+          {required && !label.trimEnd().endsWith('*') && <span className="ml-0.5 text-red-500">*</span>}
         </label>
       )}
       <select

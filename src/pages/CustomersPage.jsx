@@ -15,8 +15,8 @@ export default function CustomersPage() {
 
   return (
     <div>
-      <PageHeader 
-        title="Customers" 
+      <PageHeader
+        title="Customers"
         description="View and manage customer profiles and activity."
         crumbs={[{ label: 'Dashboard', path: '/' }, { label: 'Customers' }]}
         stats={customerStats}
