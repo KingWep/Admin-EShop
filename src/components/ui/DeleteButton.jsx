@@ -1,10 +1,10 @@
 import React from 'react';
 import Swal from 'sweetalert2';
-import { HiTrash } from 'react-icons/hi2'; // Assuming you want a trash icon
+import { HiTrash } from 'react-icons/hi2';
 
 export default function DeleteButton({ onConfirm, className = "" }) {
 
-    const handleTriggerDelete = () => {
+    const handleTriggerDelete = async () => {
         Swal.fire({
             title: 'Are you sure?',
             text: 'This data will be deleted permanently!',
@@ -15,16 +15,21 @@ export default function DeleteButton({ onConfirm, className = "" }) {
             confirmButtonText: 'Yes, delete it!',
             cancelButtonText: 'Cancel',
             reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Execute the actual state deletion function passed from parent
-                onConfirm();
+        }).then(async (result) => {
+            if (!result.isConfirmed) return;
 
-                // Show success alert
+            try {
+                await onConfirm?.();
                 Swal.fire({
                     title: 'Deleted!',
                     text: 'Data has been deleted successfully.',
                     icon: 'success'
+                });
+            } catch (error) {
+                Swal.fire({
+                    title: 'Delete failed',
+                    text: error?.message || 'Unable to delete data.',
+                    icon: 'error'
                 });
             }
         });

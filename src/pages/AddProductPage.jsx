@@ -54,6 +54,7 @@ export default function AddProductForm() {
         setCategoryError('');
         const res = await categoryApi.getAll(0, 100);
         const content = res?.content ?? [];
+        console.log('Fetched categoriesv ergb:', content);
         const list = content
           .map(item => item?.data)
           .filter(item => item && item.id != null);
