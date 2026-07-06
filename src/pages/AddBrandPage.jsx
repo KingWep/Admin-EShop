@@ -1,51 +1,152 @@
-import { useState } from 'react';
-import { useNavigate, Link, useParams } from 'react-router-dom';
-import { useEffect } from 'react';
-import { HiOutlineCloudArrowUp, HiOutlineGlobeAlt, HiOutlinePhoto, HiOutlineInformationCircle } from 'react-icons/hi2';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { HiOutlineCloudArrowUp, HiOutlineInformationCircle } from 'react-icons/hi2';
 import Button from '../components/ui/Button';
+import { categoryApi } from '../api/modules/category.api';
+import { subCategoryApi } from '../api/modules/sub-category.api';
 
 export default function AddBrandPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = Boolean(id);
 
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingBrand, setLoadingBrand] = useState(isEdit);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [previewUrl, setPreviewUrl] = useState('');
+
   const [form, setForm] = useState({
     name: '',
-    slug: '',
     description: '',
-    category: '',
-    website: '',
-    status: 'active',
-    sortOrder: '',
+    categoryID: '',
+    image: null,
+    currentImageUrl: '',
   });
 
-  // Fetch initial data if isEdit
+  // Cleanup object URL ពេល component unmount ឬ preview ប្តូរ
   useEffect(() => {
-    if (isEdit) {
-      // Mock fetch
-      setForm({
-        name: 'Existing Brand',
-        slug: 'existing-brand',
-        description: 'This is an existing brand description.',
-        category: 'Electronics',
-        website: 'https://example.com',
-        status: 'active',
-        sortOrder: '0',
-      });
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0] ?? null;
+    setForm(f => ({ ...f, image: file }));
+
+    if (previewUrl) URL.revokeObjectURL(previewUrl); // លុប URL ចាស់មុនបង្កើតថ្មី
+    setPreviewUrl(file ? URL.createObjectURL(file) : '');
+  };
+
+  const handleRemoveImage = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setForm(f => ({ ...f, image: null, currentImageUrl: '' }));
+    setPreviewUrl('');
+  };
+
+  const normalizeList = (response) => {
+    const raw = Array.isArray(response) ? response : (response?.data ?? response?.content ?? response?.items ?? []);
+    return raw
+      .map(item => (item?.data != null ? item.data : item))
+      .filter(item => item && item.id != null);
+  };
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const res = await categoryApi.getAll(0, 100);
+        setCategories(normalizeList(res));
+      } catch (err) {
+        console.error('Failed to load categories:', err);
+        setError('Failed to load categories.');
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    void fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    if (!isEdit || !id) return;
+
+    const fetchBrand = async () => {
+      try {
+        setLoadingBrand(true);
+        setError('');
+        const res = await subCategoryApi.getById(id);
+        const brand = res?.data ?? res?.payload ?? null;
+
+        if (brand) {
+          const matchedCategory = categories.find(cat => cat.name === brand.category_name);
+
+          setForm({
+            name: brand.name ?? '',
+            description: brand.description ?? '',
+            categoryID: String(
+              brand.categoryId ?? brand.category_id ?? brand.category?.id ?? matchedCategory?.id ?? ''
+            ),
+            image: null,
+            currentImageUrl: brand.image ?? '',
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load brand:', err);
+        setError('Failed to load brand details.');
+      } finally {
+        setLoadingBrand(false);
+      }
+    };
+
+    void fetchBrand();
+  }, [id, isEdit, categories]);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError('');
+
+    const payload = {
+      name: form.name.trim(),
+      categoryId: Number(form.categoryID),
+      description: form.description.trim(),
+    };
+
+    if (!payload.name) {
+      setError('Brand name is required.');
+      return;
     }
-  }, [isEdit, id]);
+    if (!payload.categoryId) {
+      setError('Category is required.');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      if (isEdit) {
+        await subCategoryApi.update(id, { ...payload, file: form.image ?? undefined });
+      } else {
+        await subCategoryApi.create({ ...payload, image: form.image ?? undefined });
+      }
+      navigate('/dashboard/brands');
+    } catch (err) {
+      console.error('Failed to save brand:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to save brand.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 pb-12">
-      {/* Page Header (replicates the specific layout) */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4">
+      <div className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">{isEdit ? 'Edit Brand' : 'Add Brand'}</h2>
-          {/* Breadcrumbs for page header */}
           <div className="mt-1 flex items-center gap-2 text-xs font-medium text-slate-500">
-            <Link to="/dashboard" className="hover:text-blue-600 transition-colors">Dashboard</Link>
+            <Link to="/dashboard" className="transition-colors hover:text-blue-600">Dashboard</Link>
             <span className="text-slate-300">›</span>
-            <Link to="/dashboard/brands" className="hover:text-blue-600 transition-colors">Brands</Link>
+            <Link to="/dashboard/brands" className="transition-colors hover:text-blue-600">Brands</Link>
             <span className="text-slate-300">›</span>
             <span className="text-slate-400">{isEdit ? 'Edit Brand' : 'Add Brand'}</span>
           </div>
@@ -54,21 +155,25 @@ export default function AddBrandPage() {
           <Button variant="secondary" onClick={() => navigate('/dashboard/brands')} className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm">
             Cancel
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+          <Button type="submit" form="brand-form" className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm" loading={submitting}>
             {isEdit ? 'Update Brand' : 'Save Brand'}
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
-        {/* Left Column: Form */}
-        <div className="lg:col-span-2 space-y-6">
+      {(error || loadingCategories || loadingBrand) && (
+        <div className={`rounded-xl border px-4 py-3 text-sm ${error ? 'border-red-200 bg-red-50 text-red-700' : 'border-slate-200 bg-slate-50 text-slate-600'}`}>
+          {error || (isEdit && loadingBrand ? 'Loading brand…' : 'Loading categories…')}
+        </div>
+      )}
+
+      <form id="brand-form" onSubmit={handleSubmit} className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="text-base font-semibold text-slate-900">Brand Information</h3>
             <p className="mb-6 mt-1 text-sm text-slate-500">Enter the details of the brand you want to add.</p>
 
             <div className="space-y-5">
-              {/* Brand Name */}
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-slate-700">
                   Brand Name <span className="text-red-500">*</span>
@@ -82,31 +187,8 @@ export default function AddBrandPage() {
                 />
               </div>
 
-              {/* Slug */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Slug (URL) <span className="text-red-500">*</span>
-                </label>
-                <div className="flex rounded-lg shadow-sm">
-                  <input
-                    type="text"
-                    placeholder="Enter brand slug"
-                    value={form.slug}
-                    onChange={e => setForm(f => ({ ...f, slug: e.target.value }))}
-                    className="w-full rounded-l-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                  />
-                  <button className="flex items-center rounded-r-lg border border-l-0 border-slate-200 bg-blue-50 px-4 text-sm font-semibold text-blue-600 hover:bg-blue-100 transition-colors">
-                    Generate
-                  </button>
-                </div>
-                <p className="mt-1.5 text-xs text-slate-500">A unique URL-friendly identifier (e.g. apple, samsung)</p>
-              </div>
-
-              {/* Description */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Description
-                </label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">Description</label>
                 <textarea
                   placeholder="Enter brand description"
                   value={form.description}
@@ -119,136 +201,25 @@ export default function AddBrandPage() {
                 </div>
               </div>
 
-              {/* Category */}
               <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Category
-                </label>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">Category</label>
                 <select
-                  value={form.category}
-                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                  value={form.categoryID}
+                  onChange={e => setForm(f => ({ ...f, categoryID: e.target.value }))}
+                  disabled={loadingCategories}
                   className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
                 >
-                  <option value="">Select category (optional)</option>
-                  <option value="Electronics">Electronics</option>
-                  <option value="Clothing">Clothing</option>
+                  <option value="">{loadingCategories ? 'Loading categories…' : 'Select category'}</option>
+                  {categories.map(category => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
                 </select>
               </div>
-
-              {/* Website */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Website
-                </label>
-                <div className="relative">
-                  <HiOutlineGlobeAlt className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="url"
-                    placeholder="https://www.example.com"
-                    value={form.website}
-                    onChange={e => setForm(f => ({ ...f, website: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 placeholder-slate-400 transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                  />
-                </div>
-              </div>
-
-              {/* Status */}
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Status <span className="text-red-500">*</span>
-                </label>
-                <div className="flex items-center gap-6">
-                  <label className="flex cursor-pointer items-center gap-2">
-                    <div className="relative flex h-4 w-4 items-center justify-center rounded-full border border-slate-300">
-                      {form.status === 'active' && <div className="h-2 w-2 rounded-full bg-blue-600" />}
-                    </div>
-                    <input
-                      type="radio"
-                      name="status"
-                      value="active"
-                      checked={form.status === 'active'}
-                      onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                      className="hidden"
-                    />
-                    <span className="text-sm font-medium text-slate-900">Active</span>
-                  </label>
-                  <label className="flex cursor-pointer items-center gap-2">
-                    <div className="relative flex h-4 w-4 items-center justify-center rounded-full border border-slate-300">
-                      {form.status === 'inactive' && <div className="h-2 w-2 rounded-full bg-blue-600" />}
-                    </div>
-                    <input
-                      type="radio"
-                      name="status"
-                      value="inactive"
-                      checked={form.status === 'inactive'}
-                      onChange={e => setForm(f => ({ ...f, status: e.target.value }))}
-                      className="hidden"
-                    />
-                    <span className="text-sm text-slate-600">Inactive</span>
-                  </label>
-                </div>
-                <p className="mt-1.5 text-xs text-slate-500">Active brands will be visible in the system.</p>
-              </div>
-
-              {/* Sort Order */}
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-slate-700">
-                  Sort Order
-                </label>
-                <input
-                  type="number"
-                  placeholder="Enter sort order (default: 0)"
-                  value={form.sortOrder}
-                  onChange={e => setForm(f => ({ ...f, sortOrder: e.target.value }))}
-                  className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                />
-                <p className="mt-1.5 text-xs text-slate-500">Brands with lower values appear first.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column */}
-        <div className="space-y-6">
-          {/* Brand Logo Upload */}
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-slate-900">Brand Logo</h3>
-            <p className="mb-4 mt-1 text-sm text-slate-500">Upload a logo for the brand.</p>
-
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 py-8 px-4 text-center transition-colors hover:border-blue-400 hover:bg-blue-50/50">
-              <HiOutlineCloudArrowUp className="mb-3 h-8 w-8 text-slate-400" />
-              <p className="text-sm font-medium text-slate-700">Drag and drop your file here</p>
-              <p className="my-2 text-xs text-slate-400">or</p>
-              <button className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-blue-600 shadow-sm transition-colors hover:bg-slate-50">
-                Browse Files
-              </button>
-              <p className="mt-4 text-[10px] text-slate-400 uppercase tracking-wide">
-                PNG, JPG, SVG up to 2MB. Recommended size: 512x512px
-              </p>
             </div>
           </div>
 
-          {/* Preview */}
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-slate-900">Preview</h3>
-            <p className="mb-4 mt-1 text-sm text-slate-500">This is how the brand will appear.</p>
-            
-            <div className="flex flex-col items-center rounded-xl border border-slate-100 bg-slate-50 p-6 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-200 text-slate-400 shadow-inner">
-                <HiOutlinePhoto className="h-6 w-6" />
-              </div>
-              <p className="mt-3 text-sm font-bold text-slate-900">
-                {form.name || 'Brand Name'}
-              </p>
-              {form.status === 'active' && (
-                <span className="mt-2 rounded-md bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-600 border border-emerald-100">
-                  Active
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Visibility Alert */}
           <div className="flex items-start gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4">
             <HiOutlineInformationCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-500" />
             <div>
@@ -259,7 +230,54 @@ export default function AddBrandPage() {
             </div>
           </div>
         </div>
-      </div>
+
+        <div className="space-y-6">
+          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+            <h3 className="text-base font-semibold text-slate-900">Brand Logo</h3>
+            <p className="mb-4 mt-1 text-sm text-slate-500">Upload a logo for the brand.</p>
+
+            {/* ✅ PREVIEW BOX */}
+            {(previewUrl || form.currentImageUrl) && (
+              <div className="relative mb-4 flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <img
+                  src={previewUrl || form.currentImageUrl}
+                  alt="Brand logo preview"
+                  className="h-32 w-32 rounded-lg object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={handleRemoveImage}
+                  className="absolute right-2 top-2 rounded-full bg-white p-1 text-slate-500 shadow-sm hover:bg-red-50 hover:text-red-600"
+                  title="Remove image"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center transition-colors hover:border-blue-400 hover:bg-blue-50/50">
+              <HiOutlineCloudArrowUp className="mb-3 h-8 w-8 text-slate-400" />
+              <p className="text-sm font-medium text-slate-700">Drag and drop your file here</p>
+              <p className="my-2 text-xs text-slate-400">or</p>
+              <label className="cursor-pointer rounded-lg border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-blue-600 shadow-sm transition-colors hover:bg-slate-50">
+                Browse Files
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+              </label>
+              <p className="mt-3 text-xs text-slate-500">
+                {form.image ? form.image.name : (form.currentImageUrl ? 'Using current image' : 'No image selected')}
+              </p>
+              <p className="mt-4 text-[10px] uppercase tracking-wide text-slate-400">
+                PNG, JPG, SVG up to 2MB. Recommended size: 512x512px
+              </p>
+            </div>
+          </div>
+        </div>
+      </form>
     </div>
   );
 }

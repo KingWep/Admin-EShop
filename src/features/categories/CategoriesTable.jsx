@@ -71,6 +71,7 @@ export default function CategoriesTable({ categories, onEdit, onDelete }) {
             title="Delete"
             className="flex h-8 w-8 items-center justify-center rounded-lg text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors"
           />
+          
         </div>
       ),
     },

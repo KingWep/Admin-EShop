@@ -42,17 +42,13 @@ export const API_ENDPOINTS = {
     GET_ALL: '/api/v1/category-icons/get/all',
     DELETE: '/api/v1/category-icons/delete',
   },
-
-  SUB_CATEGORIES: {
-    WITH_PRODUCTS: '/api/v1/subcategories/with-products',
-    UPDATE: '/api/v1/subcategories/update',
-    BY_ID: '/api/v1/subcategories/id',
-    DELETE: '/api/v1/subcategories/delete/',
+  
+   SUB_CATEGORIES: {
+    GET_ALL: '/api/v1/subcategories/get/all',
     CREATE: '/api/v1/subcategories/create/',
-    BY_CATEGORY_ID: '/api/v1/subcategories/category/id/all',
-    GET_ALL: '/api/v1/subcategories/All',
+    UPDATE: '/api/v1/subcategories/update/',  
+    DELETE: '/api/v1/subcategories/delete/',
   },
-
   ATTRIBUTES: {
     GET_ALL: '/api/v1/attributes',
     BY_ID: '/api/v1/attributes/{id}',

@@ -20,11 +20,6 @@ export default function DeleteButton({ onConfirm, className = "" }) {
 
             try {
                 await onConfirm?.();
-                Swal.fire({
-                    title: 'Deleted!',
-                    text: 'Data has been deleted successfully.',
-                    icon: 'success'
-                });
             } catch (error) {
                 Swal.fire({
                     title: 'Delete failed',

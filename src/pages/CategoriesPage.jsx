@@ -20,7 +20,7 @@ export default function CategoriesPage() {
     try {
       const res = await categoryApi.getAll(page, size);
       const raw = Array.isArray(res) ? res : (res?.data ?? res?.content ?? res?.items ?? []);
-      console.log('Fetched categories:', raw);
+      // console.log('Fetched categories:', raw);
       const list = raw
         .map(item => (item?.data != null ? item.data : item))
         .filter(item => item && item.id != null);

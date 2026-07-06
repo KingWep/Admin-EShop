@@ -1,44 +1,61 @@
 import axiosClient from "../axiosClient";
 import { API_ENDPOINTS } from "../endpoints";
 
+// Endpoint តែមួយសម្រាប់ GET operations ទាំងអស់
+const GET_ALL_URL = API_ENDPOINTS.SUB_CATEGORIES.GET_ALL; // = "/subcategories/get/all"
+
 export const subCategoryApi = {
   /**
    * Get all sub-categories (paginated)
-   * @param {number} page
-   * @param {number} size
    */
-  getAll: (page = 0, size = 10) =>
-    axiosClient.post(`${API_ENDPOINTS.SUB_CATEGORIES.GET_ALL}?page=${page}&size=${size}`),
+  getAll: (page = 1, size = 10) =>
+    axiosClient.post(GET_ALL_URL, {
+      criteria_type: 0,
+      criteria_value: "",
+      page,
+      size,
+    }),
 
   /**
-   * Get sub-category by ID
-   * @param {number} id
+   * Search sub-categories by name (fuzzy)
+   */
+  searchByName: (name, page = 1, size = 10) =>
+    axiosClient.post(GET_ALL_URL, {
+      criteria_type: 1,
+      criteria_value: name,
+      page,
+      size,
+    }),
+
+  /**
+   * Get sub-category by ID (no pagination, returns single object)
    */
   getById: (id) =>
-    axiosClient.post(`${API_ENDPOINTS.SUB_CATEGORIES.BY_ID}?id=${id}`),
+    axiosClient.post(GET_ALL_URL, {
+      criteria_type: 4,
+      criteria_value: String(id),
+    }),
 
   /**
-   * Get all sub-categories under a category (as a flat list, no pagination)
-   * @param {number} categoryId
+   * Get sub-categories filtered by category ID (paginated)
    */
-  getByCategoryId: (categoryId) =>
-    axiosClient.post(`${API_ENDPOINTS.SUB_CATEGORIES.BY_CATEGORY_ID}?categoryId=${categoryId}`),
+  getByCategoryId: (categoryId, page = 1, size = 10) =>
+    axiosClient.post(GET_ALL_URL, {
+      criteria_type: 2,
+      criteria_value: String(categoryId),
+      page,
+      size,
+    }),
 
   /**
-   * Get sub-category with its products
-   * @param {number} id
+   * Get sub-category with its products (no pagination, single object)
    */
   getWithProducts: (id) =>
-    axiosClient.post(`${API_ENDPOINTS.SUB_CATEGORIES.WITH_PRODUCTS}?id=${id}`),
+    axiosClient.post(GET_ALL_URL, {
+      criteria_type: 5,
+      criteria_value: String(id),
+    }),
 
-  /**
-   * Create a new sub-category (with optional image)
-   * @param {object} data
-   * @param {string} data.name
-   * @param {number} data.categoryId
-   * @param {string} data.description
-   * @param {File}   [data.image]
-   */
   create: ({ name, categoryId, description, image }) => {
     const formData = new FormData();
     if (image) formData.append("image", image);
@@ -49,15 +66,6 @@ export const subCategoryApi = {
     );
   },
 
-  /**
-   * Update a sub-category (with optional image)
-   * @param {number} id
-   * @param {object} data
-   * @param {string} data.name
-   * @param {number} data.categoryId
-   * @param {string} data.description
-   * @param {File}   [data.file]
-   */
   update: (id, { name, categoryId, description, file }) => {
     const formData = new FormData();
     if (file) formData.append("file", file);
@@ -68,10 +76,6 @@ export const subCategoryApi = {
     );
   },
 
-  /**
-   * Delete a sub-category by ID
-   * @param {number} id
-   */
   delete: (id) =>
     axiosClient.post(`${API_ENDPOINTS.SUB_CATEGORIES.DELETE}?id=${id}`),
 };
