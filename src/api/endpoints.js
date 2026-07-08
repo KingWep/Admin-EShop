@@ -12,17 +12,11 @@ export const API_ENDPOINTS = {
   },
 
   PRODUCTS: {
-    UPDATE: '/api/v1/products/update',
-    SUB_CATEGORY_ID: '/api/v1/products/subcategory/id',
-    SEARCH: '/api/v1/products/search',
-    PRODUCT_ID: '/api/v1/products/id',
-    WITH_SKU: '/api/v1/products/id/with-skus',
+    UPDATE: '/api/v1/products/update/',
     GET_ALL: '/api/v1/products/get/all',
     DELETE: '/api/v1/products/delete',
-    CREATE: '/api/v1/products/create',
-    CATEGORY_ID: '/api/v1/products/category/id',
-    ACTIVE: '/api/v1/products/active',
-    STATUS: '/api/v1/products/id/status',
+    UPDATE_STATUS: '/api/v1/products/update/status/',
+    CREATE : '/api/v1/products/create/'
   },
 
   CATEGORIES: {

@@ -1,29 +1,85 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ProductsTable from '../features/products/ProductsTable';
 import ProductFilters from '../features/products/ProductFilters';
-import { products as initialProducts } from '../api/mockData';
+import Pagination from '../components/ui/Pagination';
 import { useSearch } from '../hooks/useSearch';
 import { useFilter } from '../hooks/useFilter';
 import { Button, PageHeader } from '../components';
 import { HiPlus } from 'react-icons/hi2';
 import { productStats } from '../data/pageStats';
+import { productApi } from '../api/modules/product.api';
 
 export default function ProductsPage() {
-  const [products, setProducts] = useState(initialProducts);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
   const { query, setQuery, debouncedQuery } = useSearch();
   const { filters, setFilter, resetFilters, hasActiveFilters } = useFilter({ category: '', status: '' });
 
+  // Reset to page 0 whenever the search query changes
+  useEffect(() => {
+    setPageNumber(1);
+  }, [debouncedQuery]);
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await productApi.getAll({
+          page: pageNumber,
+          size: pageSize,
+          criteria_type: 0,
+          criteria_value: debouncedQuery || '',
+        });
+        if (isCancelled) return;
+
+        // res = { code, data: { payload, total_pages, total_items, ... }, message }
+        const { payload, total_pages, total_items } = res.data;
+        setProducts(payload);
+        setTotalPages(total_pages);
+        setTotalItems(total_items);
+      } catch (err) {
+        if (!isCancelled) setError(err);
+      } finally {
+        if (!isCancelled) setLoading(false);
+      }
+    };
+
+    fetchProducts();
+    return () => { isCancelled = true; };
+  }, [pageNumber, pageSize, debouncedQuery]);
+
+  // Client-side filters for fields the backend search doesn't cover yet.
   const filtered = products.filter(p => {
-    const q = debouncedQuery.toLowerCase();
-    const matchQuery = !q || p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q);
     const matchCategory = !filters.category || p.category === filters.category;
-    const matchStatus = !filters.status || p.status === filters.status;
-    return matchQuery && matchCategory && matchStatus;
+    const matchStatus = !filters.status || p.is_active === (filters.status === 'active');
+    return matchCategory && matchStatus;
   });
 
-  const handleDelete = (id) => setProducts(prev => prev.filter(p => p.id !== id));
-  // You can keep your sleek single-line function here!
+  const handleDelete = async (id) => {
+    try {
+      await productApi.delete(id);
+      setProducts(prev => prev.filter(p => p.id !== id));
+      setTotalItems(prev => Math.max(0, prev - 1));
+    } catch (err) {
+      console.error('Failed to delete product', err);
+    }
+  };
+
+  const handlePageChange = (nextPage) => {
+    if (nextPage < 0 || nextPage >= totalPages || nextPage === pageNumber) return;
+    setPageNumber(nextPage);
+  };
+
   return (
     <div>
       <PageHeader
@@ -49,7 +105,20 @@ export default function ProductsPage() {
         hasActive={hasActiveFilters}
       />
 
-      {filtered.length === 0 && (
+      {loading && (
+        <div className="card flex items-center justify-center py-16 text-sm text-slate-400">
+          Loading products…
+        </div>
+      )}
+
+      {!loading && error && (
+        <div className="card flex flex-col items-center py-16 text-center">
+          <h3 className="text-base font-semibold text-red-600">Failed to load products</h3>
+          <p className="mt-1 text-sm text-slate-400">{error.message || 'Something went wrong.'}</p>
+        </div>
+      )}
+
+      {!loading && !error && filtered.length === 0 && (
         <div className="card flex flex-col items-center py-16 text-center">
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100">
             <svg className="h-8 w-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -61,8 +130,15 @@ export default function ProductsPage() {
         </div>
       )}
 
-      {filtered.length > 0 && (
-        <ProductsTable products={filtered} onDelete={handleDelete} />
+      {!loading && !error && filtered.length > 0 && (
+        <>
+          <ProductsTable products={filtered} onDelete={handleDelete} />
+          <Pagination
+            pageNumber={pageNumber}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
       )}
     </div>
   );

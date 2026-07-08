@@ -20,7 +20,6 @@ export default function BrandsPage() {
   setError(null);
   try {
     const res = await subCategoryApi.getAll(page, size);
-    console.log('Fetched brands response:', res);
     const raw = res?.data?.payload ?? [];
 
     const list = raw
