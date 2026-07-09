@@ -8,7 +8,7 @@ export const productApi = {
    * POST /api/v1/products/get/all
    * Body: { page, size, criteria_type, criteria_value }
    */
-  getAll: ({ page = 1, size = 10, criteria_type = 0, criteria_value = "" } = {}) =>
+  getAll: ({ page = 1, size = 10, criteria_type = 5, criteria_value = "" } = {}) =>
     axiosClient.post(API_ENDPOINTS.PRODUCTS.GET_ALL, {
       page,
       size,

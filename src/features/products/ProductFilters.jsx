@@ -1,9 +1,12 @@
 import { HiOutlineMagnifyingGlass, HiAdjustmentsHorizontal } from 'react-icons/hi2';
 import { Select } from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
-import { CATEGORIES, PRODUCT_STATUSES } from '../../utils/constants';
+import { PRODUCT_STATUSES } from '../../utils/constants';
+import { useCategories } from '../../hooks/useCategories';
 
 export default function ProductFilters({ search, onSearch, filters, onFilter, onReset, hasActive }) {
+  const { categories } = useCategories();
+
   return (
     <div className="card mb-4">
       <div className="flex flex-wrap items-end gap-3">
@@ -26,8 +29,8 @@ export default function ProductFilters({ search, onSearch, filters, onFilter, on
             onChange={e => onFilter('category', e.target.value)}
           >
             <option value="">All Categories</option>
-            {CATEGORIES.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
             ))}
           </Select>
         </div>

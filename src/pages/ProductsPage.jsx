@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import ProductsTable from '../features/products/ProductsTable';
 import ProductFilters from '../features/products/ProductFilters';
@@ -10,6 +10,16 @@ import { HiPlus } from 'react-icons/hi2';
 import { productStats } from '../data/pageStats';
 import { productApi } from '../api/modules/product.api';
 
+const CRITERIA_TYPE = {
+  ALL: 0,
+  NAME: 1,
+  SUB_CATEGORY_ID: 2,
+  CATEGORY_ID: 3,
+  ACTIVE: 4,
+  PRODUCT_ID: 5,
+  PRODUCT_WITH_SKUS: 6,
+};
+
 export default function ProductsPage() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -20,12 +30,27 @@ export default function ProductsPage() {
   const [totalItems, setTotalItems] = useState(0);
 
   const { query, setQuery, debouncedQuery } = useSearch();
-  const { filters, setFilter, resetFilters, hasActiveFilters } = useFilter({ category: '', status: '' });
 
-  // Reset to page 0 whenever the search query changes
+  const initialFilters = useMemo(() => ({ category: '', status: '' }), []);
+  const { filters, setFilter, resetFilters, hasActiveFilters } = useFilter(initialFilters);
+
+  const { criteriaType, criteriaValue } = useMemo(() => {
+    if (debouncedQuery) {
+      return { criteriaType: CRITERIA_TYPE.NAME, criteriaValue: debouncedQuery };
+    }
+    if (filters.category) {
+      return { criteriaType: CRITERIA_TYPE.CATEGORY_ID, criteriaValue: filters.category };
+    }
+    if (filters.status === 'active') {
+      return { criteriaType: CRITERIA_TYPE.ACTIVE, criteriaValue: '' };
+    }
+    return { criteriaType: CRITERIA_TYPE.ALL, criteriaValue: '' };
+  }, [debouncedQuery, filters.category, filters.status]);
+
+  // Reset ទៅ page 1 រាល់ពេល search ឬ filter ប្តូរ
   useEffect(() => {
     setPageNumber(1);
-  }, [debouncedQuery]);
+  }, [debouncedQuery, filters.category, filters.status]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -37,14 +62,37 @@ export default function ProductsPage() {
         const res = await productApi.getAll({
           page: pageNumber,
           size: pageSize,
-          criteria_type: 0,
-          criteria_value: debouncedQuery || '',
+          criteria_type: criteriaType,
+          criteria_value: criteriaValue,
         });
+        console.log("Product",res);
         if (isCancelled) return;
-
-        // res = { code, data: { payload, total_pages, total_items, ... }, message }
+        
         const { payload, total_pages, total_items } = res.data;
-        setProducts(payload);
+
+        // Transform the nested API data into a flat format for the table
+        const formattedProducts = payload.map(product => {
+          // Find the default SKU variant, or fall back to the first variant
+          const defaultSku = product.skus?.find(s => s.is_default) || product.skus?.[0] || {};
+          
+          return {
+            id: product.id,
+            name: product.name,
+            // Fallback to a placeholder if main_image array is empty
+            image: product.main_image?.[0] || 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg',
+            sku: defaultSku.sku || 'N/A',
+            price: defaultSku.price || 0,
+            // Since quantity is null in your screenshot, we use 0 or defaultSku.quantity
+            stock: defaultSku.quantity ?? 0, 
+            is_active: product.is_active,
+            // Add defaults or fallbacks for properties missing in this API chunk
+            category: product.category?.name || 'N/A', 
+            brand: product.brand?.name || 'N/A',
+            createdAt: product.created_at || 'N/A'
+          };
+        });
+
+        setProducts(formattedProducts);
         setTotalPages(total_pages);
         setTotalItems(total_items);
       } catch (err) {
@@ -55,14 +103,16 @@ export default function ProductsPage() {
     };
 
     fetchProducts();
-    return () => { isCancelled = true; };
-  }, [pageNumber, pageSize, debouncedQuery]);
 
-  // Client-side filters for fields the backend search doesn't cover yet.
+    return () => {
+      isCancelled = true;
+    };
+  }, [pageNumber, pageSize, criteriaType, criteriaValue]);
+  // "inactive" មិនមាន criteria_type ដាច់ដោយឡែកទេ (មានតែ ACTIVE=4)
+  // ដូច្នេះនៅតែត្រូវ filter "inactive" នៅ client-side
   const filtered = products.filter(p => {
-    const matchCategory = !filters.category || p.category === filters.category;
-    const matchStatus = !filters.status || p.is_active === (filters.status === 'active');
-    return matchCategory && matchStatus;
+    if (filters.status === 'inactive') return p.is_active !== true;
+    return true;
   });
 
   const handleDelete = async (id) => {
@@ -72,11 +122,12 @@ export default function ProductsPage() {
       setTotalItems(prev => Math.max(0, prev - 1));
     } catch (err) {
       console.error('Failed to delete product', err);
+      setError(null);
     }
   };
 
   const handlePageChange = (nextPage) => {
-    if (nextPage < 0 || nextPage >= totalPages || nextPage === pageNumber) return;
+    if (nextPage < 1 || nextPage > totalPages || nextPage === pageNumber) return;
     setPageNumber(nextPage);
   };
 

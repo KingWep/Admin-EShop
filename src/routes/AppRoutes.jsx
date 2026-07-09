@@ -19,6 +19,7 @@ import AddCustomerGroupPage from '../pages/AddCustomerGroupPage';
 import ProductsPage from '../pages/ProductsPage';
 import AddProductPage from '../pages/AddProductPage';
 import EditProductPage from '../pages/EditProductPage';
+import ProductDetail from '../pages/ProductDetail';
 import CategoriesPage from '../pages/CategoriesPage';
 import AddCategoryPage from '../pages/AddCategoryPage';
 import BrandsPage from '../pages/BrandsPage';
@@ -62,6 +63,7 @@ export default function AppRoutes() {
         {/* Products group */}
         <Route path="products" element={<ProductsPage />} />
         <Route path="products/add" element={<AddProductPage />} />
+        <Route path="products/view/:id" element={<ProductDetail />} />
         <Route path="products/edit/:id" element={<EditProductPage />} />
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="categories/add" element={<AddCategoryPage />} />

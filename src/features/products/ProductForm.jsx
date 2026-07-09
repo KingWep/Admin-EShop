@@ -2,11 +2,14 @@ import { useState } from 'react';
 import Input, { Textarea, Select } from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import ImageUploadInput from './ImageUploadInput';
-import { CATEGORIES, PRODUCT_STATUSES } from '../../utils/constants';
+import { PRODUCT_STATUSES } from '../../utils/constants';
+import { useCategories } from '../../hooks/useCategories';
 
 const BRANDS_LIST = ['Apple', 'Samsung', 'Nike', 'Adidas', 'Sony', 'Louis Vuitton', 'Amazon', 'Zara', 'Patagonia', 'DJI'];
 
 export default function ProductForm({ initialData = {}, onSubmit, onCancel, loading }) {
+  const { categories, loading: categoriesLoading } = useCategories();
+
   const [form, setForm] = useState({
     name: initialData.name || '',
     price: initialData.price || '',
@@ -80,9 +83,10 @@ export default function ProductForm({ initialData = {}, onSubmit, onCancel, load
           onChange={e => set('category', e.target.value)}
           error={errors.category}
           required
+          disabled={categoriesLoading}
         >
-          <option value="">Select category…</option>
-          {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          <option value="">{categoriesLoading ? 'Loading...' : 'Select category…'}</option>
+          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </Select>
         <Select
           label="Brand"

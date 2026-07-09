@@ -1,432 +1,59 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Input, { Textarea, Select, Toggle } from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import ImageUploadInput from '../components/ui/ImageUploadInput';
 import { Card } from '../components/ui/Card';
-import { categoryApi } from '../api/modules/category.api';
-import { subCategoryApi } from '../api/modules/sub-category.api';
-import { productApi } from '../api/modules/product.api';
-
-const createAttributeGroup = () => ({
-  id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-  name: '',
-  values: [''],
-});
-
-const createVariant = (isDefault = false) => ({
-  id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-  description: '',
-  price: '',
-  is_default: isDefault,
-  operatorProductAttribute: false,
-  inventory_quantity: '',
-  warehouse_location: '',
-  product_attributes: [],
-});
-
-const parseOptionalNumber = (value) => {
-  if (value === '' || value == null) return undefined;
-  const parsed = Number(value);
-  return Number.isNaN(parsed) ? undefined : parsed;
-};
-
-
-const buildProductAttributes = (productAttributes) =>
-  productAttributes
-    .map((attribute) => {
-      const name = attribute.name.trim();
-      const values = attribute.values
-        .map(value => value.trim())
-        .filter(Boolean)
-        .map(value => ({ id: null, value }));
-
-      if (!name || values.length === 0) {
-        return null;
-      }
-
-      return { id: null, name, attributes: values };
-    })
-    .filter(Boolean);
-
-const buildSkuPayload = (variant) => ({
-  productSkuId: null,
-  description: variant.description.trim(),
-  price: parseOptionalNumber(variant.price),
-  quantity: parseOptionalNumber(variant.inventory_quantity),
-  is_default: variant.is_default,
-  operatorProductAttribute: variant.operatorProductAttribute,
-  inventory: {
-    quantity: parseOptionalNumber(variant.inventory_quantity),
-    warehouse_location: variant.warehouse_location.trim(),
-  },
-  product_attributes: buildProductAttributes(variant.product_attributes),
-});
+import { useProducts } from '../hooks/useProducts';
 
 export default function AddProductForm() {
-  const navigate = useNavigate();
+  const {
+    // categories / sub-categories
+    categories,
+    subCategories,
+    selectedCategoryId,
+    selectedSubCategoryId,
+    loadingCategories,
+    loadingSubCategories,
+    categoryError,
+    handleCategoryChange,
+    handleSubCategoryChange,
 
-  const [categories, setCategories] = useState([]);
-  const [subCategories, setSubCategories] = useState([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState('');
-  const [selectedSubCategoryId, setSelectedSubCategoryId] = useState('');
-  const [loadingCategories, setLoadingCategories] = useState(true);
-  const [loadingSubCategories, setLoadingSubCategories] = useState(false);
-  const [categoryError, setCategoryError] = useState('');
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState('');
-  const [submitSuccess, setSubmitSuccess] = useState('');
-  const [productImages, setProductImages] = useState([]);
-  const [variants, setVariants] = useState([createVariant(true)]);
+    // submission state
+    submitting,
+    submitError,
+    submitSuccess,
 
-  const [isActive, setIsActive] = useState(true);
+    // basic fields
+    form,
+    updateField,
+    isActive,
+    handleStatusChange,
 
-  // Only fields that swagger actually needs at product level + that the UI
-  // truly uses. `is_active` removed from here — it already lives in `isActive`.
-  const [form, setForm] = useState({
-    name: '',
-    description: ''
-  });
+    // images
+    productImages,
+    setProductImages,
 
-  const handleStatusChange = (e) => {
-    setIsActive(e.target.value === 'true');
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
+    // variants
+    variants,
+    updateVariant,
+    addVariant,
+    removeVariant,
+    setDefaultVariant,
 
-  const updateField = (key, value) => {
-    setForm(prev => ({ ...prev, [key]: value }));
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
+    // attribute groups
+    addAttributeGroup,
+    removeAttributeGroup,
+    updateVariantAttribute,
+    handleAttributeToggle,
 
-  const updateVariant = (variantId, key, value) => {
-    setVariants(prev => prev.map(variant => (
-      variant.id === variantId ? { ...variant, [key]: value } : variant
-    )));
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
+    // attribute values
+    addAttributeValue,
+    updateAttributeValue,
+    removeAttributeValue,
 
-  const updateVariantAttribute = (variantId, attributeId, key, value) => {
-    setVariants(prev => prev.map(variant => {
-      if (variant.id !== variantId) {
-        return variant;
-      }
-
-      return {
-        ...variant,
-        product_attributes: variant.product_attributes.map(attribute => (
-          attribute.id === attributeId ? { ...attribute, [key]: value } : attribute
-        )),
-      };
-    }));
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
-
-  const addAttributeValue = (variantId, attributeId) => {
-    setVariants(prev => prev.map(variant => {
-      if (variant.id !== variantId) {
-        return variant;
-      }
-
-      return {
-        ...variant,
-        product_attributes: variant.product_attributes.map(attribute => (
-          attribute.id === attributeId
-            ? { ...attribute, values: [...attribute.values, ''] }
-            : attribute
-        )),
-      };
-    }));
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
-
-  const updateAttributeValue = (variantId, attributeId, valueIndex, value) => {
-    setVariants(prev => prev.map(variant => {
-      if (variant.id !== variantId) {
-        return variant;
-      }
-
-      return {
-        ...variant,
-        product_attributes: variant.product_attributes.map(attribute => {
-          if (attribute.id !== attributeId) {
-            return attribute;
-          }
-
-          return {
-            ...attribute,
-            values: attribute.values.map((item, index) => (index === valueIndex ? value : item)),
-          };
-        }),
-      };
-    }));
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
-
-  const removeAttributeValue = (variantId, attributeId, valueIndex) => {
-    setVariants(prev => prev.map(variant => {
-      if (variant.id !== variantId) {
-        return variant;
-      }
-
-      return {
-        ...variant,
-        product_attributes: variant.product_attributes.map(attribute => {
-          if (attribute.id !== attributeId) {
-            return attribute;
-          }
-
-          const nextValues = attribute.values.filter((_, index) => index !== valueIndex);
-          return {
-            ...attribute,
-            values: nextValues.length > 0 ? nextValues : [''],
-          };
-        }),
-      };
-    }));
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
-
-  const addVariant = () => {
-    setVariants(prev => [...prev, createVariant(prev.length === 0)]);
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
-
-  const removeVariant = (variantId) => {
-    setVariants(prev => {
-      const next = prev.filter(variant => variant.id !== variantId);
-      if (next.length === 0) {
-        return [createVariant(true)];
-      }
-
-      if (!next.some(variant => variant.is_default)) {
-        next[0] = { ...next[0], is_default: true };
-      }
-
-      return next;
-    });
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
-
-  const addAttributeGroup = (variantId) => {
-    setVariants(prev => prev.map(variant => (
-      variant.id === variantId
-        ? {
-            ...variant,
-            operatorProductAttribute: true,
-            product_attributes: [...variant.product_attributes, createAttributeGroup()],
-          }
-        : variant
-    )));
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
-
-  const removeAttributeGroup = (variantId, attributeId) => {
-    setVariants(prev => prev.map(variant => {
-      if (variant.id !== variantId) {
-        return variant;
-      }
-
-      const nextAttributes = variant.product_attributes.filter(attribute => attribute.id !== attributeId);
-      return {
-        ...variant,
-        product_attributes: nextAttributes,
-      };
-    }));
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
-
-  const handleAttributeToggle = (variantId, enabled) => {
-    setVariants(prev => prev.map(variant => {
-      if (variant.id !== variantId) {
-        return variant;
-      }
-
-      return {
-        ...variant,
-        operatorProductAttribute: enabled,
-        product_attributes: enabled
-          ? (variant.product_attributes.length > 0 ? variant.product_attributes : [createAttributeGroup()])
-          : [],
-      };
-    }));
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
-
-  const setDefaultVariant = (variantId) => {
-    setVariants(prev => prev.map(variant => ({
-      ...variant,
-      is_default: variant.id === variantId,
-    })));
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setLoadingCategories(true);
-        setCategoryError('');
-        const res = await categoryApi.getAll(0, 100);
-        const content = res?.content ?? [];
-        const list = content
-          .map(item => item?.data)
-          .filter(item => item && item.id != null);
-        setCategories(list);
-      } catch {
-        setCategoryError('Failed to load categories');
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
-
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    if (!selectedCategoryId) {
-      return;
-    }
-
-    const fetchSubCategories = async () => {
-      try {
-        setLoadingSubCategories(true);
-        setSelectedSubCategoryId('');
-        const res = await subCategoryApi.getByCategoryId(selectedCategoryId);
-        const raw = Array.isArray(res) ? res : (res?.data?.payload ?? res?.content ?? []);
-        const list = raw
-          .map(item => (item?.data != null ? item.data : item))
-          .filter(item => item && item.id != null);
-        setSubCategories(list);
-      } catch {
-        setSubCategories([]);
-      } finally {
-        setLoadingSubCategories(false);
-      }
-    };
-
-    fetchSubCategories();
-  }, [selectedCategoryId]);
-
-  const handleCategoryChange = (e) => {
-    setSelectedCategoryId(e.target.value);
-    setSelectedSubCategoryId('');
-    setSubCategories([]);
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
-
-  const handleSubCategoryChange = (e) => {
-    setSelectedSubCategoryId(e.target.value);
-    setSubmitError('');
-    setSubmitSuccess('');
-  };
-
-  const handleCancel = () => {
-    navigate('/dashboard/products');
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!form.name.trim()) {
-      setSubmitError('Product name is required.');
-      return;
-    }
-
-    if (productImages.length === 0) {
-      setSubmitError('Please upload at least one product image.');
-      return;
-    }
-
-    if (!selectedSubCategoryId) {
-      setSubmitError('Please choose a sub-category.');
-      return;
-    }
-
-    const description = form.description.trim();
-
-    const firstInvalidVariant = variants.find((variant) => {
-      return !variant.description.trim()
-        || parseOptionalNumber(variant.price) == null
-        || parseOptionalNumber(variant.inventory_quantity) == null
-        || !variant.warehouse_location.trim();
-    });
-
-    if (firstInvalidVariant) {
-      setSubmitError('Each SKU needs a description, price, inventory quantity, and warehouse location.');
-      return;
-    }
-
-    const invalidAttributeVariant = variants.find((variant) => {
-      if (!variant.operatorProductAttribute) {
-        return false;
-      }
-
-      return variant.product_attributes.some((attribute) => {
-        if (!attribute.name.trim()) {
-          return true;
-        }
-
-        return attribute.values.some(value => !value.trim());
-      });
-    });
-
-    if (invalidAttributeVariant) {
-      setSubmitError('Fill in every enabled product attribute name and value, or turn the switch off.');
-      return;
-    }
-
-    const normalizedVariants = variants.map(buildSkuPayload);
-
-    if (!normalizedVariants.some(variant => variant.is_default)) {
-      setSubmitError('Choose one default SKU.');
-      return;
-    }
-
-    try {
-      setSubmitting(true);
-      setSubmitError('');
-      setSubmitSuccess('');
-
-      await productApi.create({
-        name: form.name.trim(),
-        description: description || undefined,
-        is_active: isActive,
-        sub_category_id: Number(selectedSubCategoryId),
-        skus: normalizedVariants,
-        files: productImages,
-      });
-
-      setSubmitSuccess('Product created successfully.');
-      setForm({
-        name: '',
-        description: '',
-      });
-      setProductImages([]);
-      setVariants([createVariant(true)]);
-      setSelectedCategoryId('');
-      setSelectedSubCategoryId('');
-      setSubCategories([]);
-      setIsActive(true);
-    } catch (err) {
-      const message = err?.response?.data?.message || err?.message || 'Failed to create product.';
-      setSubmitError(message);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+    // actions
+    handleCancel,
+    handleSubmit,
+  } = useProducts();
 
   return (
     <form onSubmit={handleSubmit} className="max-w-7xl mx-auto p-4">

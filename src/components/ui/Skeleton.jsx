@@ -2,7 +2,19 @@ import { cn } from '../../utils/cn';
 
 function SkeletonBlock({ className }) {
   return (
-    <div className={cn('animate-pulse rounded bg-slate-200', className)} />
+    <div className="max-w-7xl mx-auto p-4 space-y-6 animate-pulse">
+      <div className="h-8 w-56 bg-slate-200 rounded-lg" />
+      <div className="grid grid-cols-12 gap-6">
+        <div className="col-span-12 lg:col-span-7 space-y-4">
+          <div className="h-64 bg-slate-200 rounded-2xl" />
+          <div className="h-80 bg-slate-200 rounded-2xl" />
+        </div>
+        <div className="col-span-12 lg:col-span-5 space-y-4">
+          <div className="h-48 bg-slate-200 rounded-2xl" />
+          <div className="h-48 bg-slate-200 rounded-2xl" />
+        </div>
+      </div>
+    </div>
   );
 }
 

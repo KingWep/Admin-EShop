@@ -48,6 +48,7 @@ export const PAYMENT_STATUSES = {
 
 export const PRODUCT_STATUSES = {
   active: { label: 'Active', variant: 'success' },
+  inactive: { label: 'Inactive', variant: 'danger' },
   draft: { label: 'Draft', variant: 'default' },
   out_of_stock: { label: 'Out of Stock', variant: 'danger' },
   archived: { label: 'Archived', variant: 'default' },
