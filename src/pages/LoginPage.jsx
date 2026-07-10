@@ -104,20 +104,6 @@ export default function LoginPage() {
               required
             />
           </div>
-
-          {/* <div className="flex items-center">
-            <input
-              id="remember_me"
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="h-4 w-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-slate-900 transition-colors cursor-pointer"
-            />
-            <label htmlFor="remember_me" className="ml-2 block text-sm text-slate-400 cursor-pointer select-none">
-              Remember me
-            </label>
-          </div> */}
-
           <button
             type="submit"
             className="w-full py-3 px-4 rounded-xl text-white font-semibold bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 transform hover:-translate-y-0.5 transition-all duration-300 shadow-lg shadow-indigo-500/25"

@@ -1,8 +1,19 @@
 import React from 'react';
 import { HiChevronLeft, HiChevronRight } from 'react-icons/hi2';
+import { cn } from '../../utils/cn';
 
+/**
+ * Pagination footer — pairs with Table.jsx's visual language
+ * (indigo-600 active state, rounded-lg buttons, slate-50 hovers).
+ *
+ * @param {number} pageNumber - 1-indexed current page
+ * @param {number} totalPages
+ * @param {number} pageSize
+ * @param {number} totalResults
+ * @param {function} onPageChange - (page) => void
+ */
 export default function Pagination({
-  pageNumber = 1,     // 1-indexed: first page is 1, not 0
+  pageNumber = 1,
   totalPages = 0,
   pageSize,
   totalResults,
@@ -10,104 +21,118 @@ export default function Pagination({
 }) {
   if (totalPages <= 1) return null;
 
-  // 1-indexed page list: [1, 2, 3, ..., totalPages]
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+  const pages = getPageNumbers(pageNumber, totalPages);
 
   const showResultsSummary = typeof pageSize === 'number' && typeof totalResults === 'number';
   const rangeStart = totalResults === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
   const rangeEnd = Math.min(pageNumber * pageSize, totalResults);
 
   return (
-    <div className="flex items-center justify-between border-t border-slate-200 bg-white px-4 py-3 sm:px-6 mt-4 rounded-b-xl">
-      <div className="flex flex-1 justify-between sm:hidden">
+    <div className="rounded-b-xl flex flex-col gap-3 border-t border-slate-100 bg-white px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+      {/* Mobile: simple prev/next */}
+      <div className="flex items-center justify-between gap-3 sm:hidden">
         <button
           onClick={() => onPageChange(pageNumber - 1)}
           disabled={pageNumber === 1}
-          className="relative inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
         >
+          <HiChevronLeft className="h-4 w-4" />
           Previous
         </button>
+        <span className="text-sm text-slate-500">
+          {pageNumber} / {totalPages}
+        </span>
         <button
           onClick={() => onPageChange(pageNumber + 1)}
           disabled={pageNumber === totalPages}
-          className="relative ml-3 inline-flex items-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
         >
           Next
+          <HiChevronRight className="h-4 w-4" />
         </button>
       </div>
-      <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm text-slate-700">
-            {showResultsSummary ? (
-              <>
-                Showing <span className="font-medium">{rangeStart}</span> to{' '}
-                <span className="font-medium">{rangeEnd}</span> of{' '}
-                <span className="font-medium">{totalResults}</span> results
-              </>
-            ) : (
-              <>
-                Showing page <span className="font-medium">{pageNumber}</span> of{' '}
-                <span className="font-medium">{totalPages}</span>
-              </>
-            )}
-          </p>
-        </div>
-        <div>
-          <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-            <button
-              onClick={() => onPageChange(pageNumber - 1)}
-              disabled={pageNumber === 1}
-              className="relative inline-flex items-center rounded-l-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+
+      {/* Desktop */}
+      <p className="hidden text-sm text-slate-500 sm:block">
+        {showResultsSummary ? (
+          <>
+            Showing <span className="font-medium text-slate-700">{rangeStart}</span> to{' '}
+            <span className="font-medium text-slate-700">{rangeEnd}</span> of{' '}
+            <span className="font-medium text-slate-700">{totalResults}</span> results
+          </>
+        ) : (
+          <>
+            Showing page <span className="font-medium text-slate-700">{pageNumber}</span> of{' '}
+            <span className="font-medium text-slate-700">{totalPages}</span>
+          </>
+        )}
+      </p>
+
+      <nav className="hidden items-center gap-1 sm:flex" aria-label="Pagination">
+        <button
+          onClick={() => onPageChange(pageNumber - 1)}
+          disabled={pageNumber === 1}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+        >
+          <span className="sr-only">Previous</span>
+          <HiChevronLeft className="h-4 w-4" aria-hidden="true" />
+        </button>
+
+        {pages.map((page, i) =>
+          page === '...' ? (
+            <span
+              key={`ellipsis-${i}`}
+              className="flex h-8 min-w-8 items-center justify-center px-1 text-sm text-slate-400"
             >
-              <span className="sr-only">Previous</span>
-              <HiChevronLeft className="h-5 w-5" aria-hidden="true" />
-            </button>
-
-            {pages.map(page => {
-              const isEdge = page === 1 || page === totalPages;
-              const isNearCurrent = page >= pageNumber - 1 && page <= pageNumber + 1;
-
-              if (isEdge || isNearCurrent) {
-                return (
-                  <button
-                    key={page}
-                    onClick={() => onPageChange(page)}
-                    className={`relative inline-flex items-center px-4 py-2 text-sm font-semibold focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
-                      pageNumber === page
-                        ? 'z-10 bg-blue-600 text-white focus-visible:outline-blue-600'
-                        : 'text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus:outline-offset-0'
-                    }`}
-                  >
-                    {page}
-                  </button>
-                );
-              }
-
-              if (page === pageNumber - 2 || page === pageNumber + 2) {
-                return (
-                  <span
-                    key={page}
-                    className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-slate-700 ring-1 ring-inset ring-slate-300 focus:outline-offset-0"
-                  >
-                    ...
-                  </span>
-                );
-              }
-
-              return null;
-            })}
-
+              …
+            </span>
+          ) : (
             <button
-              onClick={() => onPageChange(pageNumber + 1)}
-              disabled={pageNumber === totalPages}
-              className="relative inline-flex items-center rounded-r-md px-2 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50"
+              key={page}
+              onClick={() => onPageChange(page)}
+              aria-current={pageNumber === page ? 'page' : undefined}
+              className={cn(
+                'flex h-8 min-w-8 items-center justify-center rounded-lg px-2 text-sm font-medium transition-colors',
+                pageNumber === page
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:bg-slate-100'
+              )}
             >
-              <span className="sr-only">Next</span>
-              <HiChevronRight className="h-5 w-5" aria-hidden="true" />
+              {page}
             </button>
-          </nav>
-        </div>
-      </div>
+          )
+        )}
+
+        <button
+          onClick={() => onPageChange(pageNumber + 1)}
+          disabled={pageNumber === totalPages}
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+        >
+          <span className="sr-only">Next</span>
+          <HiChevronRight className="h-4 w-4" aria-hidden="true" />
+        </button>
+      </nav>
     </div>
   );
+}
+
+/** Builds a compact 1-indexed page list, e.g. 1 2 3 ... 13, with no adjacent duplicate ellipses. */
+function getPageNumbers(current, total, siblings = 1) {
+  const totalNumbers = siblings * 2 + 5;
+  if (total <= totalNumbers) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  const left = Math.max(current - siblings, 1);
+  const right = Math.min(current + siblings, total);
+
+  const pages = [1];
+  if (left > 2) pages.push('...');
+  for (let i = left; i <= right; i++) {
+    if (i !== 1 && i !== total) pages.push(i);
+  }
+  if (right < total - 1) pages.push('...');
+  if (total > 1) pages.push(total);
+
+  return pages;
 }

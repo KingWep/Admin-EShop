@@ -6,6 +6,8 @@ import { formatCurrency, formatDate } from '../../utils/formatters';
 import { ORDER_STATUSES } from '../../utils/constants';
 import { HiOutlineEye } from 'react-icons/hi2';
 import { cn } from '../../utils/cn';
+import OrderFilter from './OrderFilter';
+import Pagination from '../../components/ui/Pagination';
 
 const STATUS_TABS = [
   { key: 'all',        label: 'All Orders' },
@@ -53,30 +55,6 @@ export default function OrdersTable({ orders }) {
 
   return (
     <div>
-      {/* Status Tabs */}
-      <div className="mb-4 flex gap-1 overflow-x-auto rounded-xl border border-slate-100 bg-white p-1">
-        {STATUS_TABS.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={cn(
-              'flex-shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-150',
-              activeTab === tab.key
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100'
-            )}
-          >
-            {tab.label}
-            <span className={cn(
-              'ml-1.5 rounded-full px-1.5 py-0.5 text-xs',
-              activeTab === tab.key ? 'bg-indigo-500 text-indigo-100' : 'bg-slate-100 text-slate-500'
-            )}>
-              {tab.key === 'all' ? orders.length : orders.filter(o => o.status === tab.key).length}
-            </span>
-          </button>
-        ))}
-      </div>
-
       <Table columns={columns} data={filtered} />
     </div>
   );
