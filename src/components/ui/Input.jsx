@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { cn } from '../../utils/cn';
+import { cn } from '@/utils/cn';
 
 /** Renders a label string, turning a trailing ' *' into a red asterisk. */
 function renderLabel(label) {

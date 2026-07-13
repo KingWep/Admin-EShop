@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { cn } from '../../utils/cn';
+import { cn } from '@/utils/cn';
 
 export default function ImageUploadInput({ className, files = [], onFilesChange }) {
   const [images, setImages] = useState([]);

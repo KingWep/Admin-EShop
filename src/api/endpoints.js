@@ -71,21 +71,23 @@ export const API_ENDPOINTS = {
   },
 
   ORDERS: {
-    GET_ALL: '/api/v1/orders', // GET
-    BY_NUMBER: '/api/v1/orders/number/',
-    BY_ID: '/api/v1/orders/id/',
-    BAKONG_VERIFY: '/api/v1/orders/bakong/verify',
-    BAKONG_INITIATE: '/api/v1/orders/bakong/initiate',
-    BAKONG_CALLBACK: '/api/v1/orders/bakong/callback',
-    USER_BY_ID: '/api/v1/orders/user/id/',
-    USER_HISTORY: '/api/v1/orders/user/history',
-    USER_FROM_CART: '/api/v1/orders/user/from-cart',
-    USER_FROM_CART_BAKONG: '/api/v1/orders/user/from-cart/bakong',
-    USER_DETAIL: '/api/v1/orders/user/detail',
-    USER_CANCEL: '/api/v1/orders/user/cancel',
-    UPDATE_STATUS: '/api/v1/orders/status/',
+  GET_ALL: '/api/v1/orders',              // GET
+  GET_ALL_ALT: '/api/v1/orders/get/all',  // POST — ត្រូវសាកសួរ backend ថាតើប្រើមួយណា
+  SUMMARY: '/api/v1/orders/summary',      // GET — ថ្មី
+  ITEMS: '/api/v1/orders/items',          // POST — ថ្មី
+  BY_NUMBER: '/api/v1/orders/number/',    // POST
+  BY_ID: '/api/v1/orders/id/',            // POST (មិនមែន GET)
+  BAKONG_VERIFY: '/api/v1/orders/bakong/verify',
+  BAKONG_INITIATE: '/api/v1/orders/bakong/initiate',
+  BAKONG_CALLBACK: '/api/v1/orders/bakong/callback',
+  USER_BY_ID: '/api/v1/orders/user/id/',
+  USER_HISTORY: '/api/v1/orders/user/history',
+  USER_FROM_CART: '/api/v1/orders/user/from-cart',
+  USER_FROM_CART_BAKONG: '/api/v1/orders/user/from-cart/bakong',
+  USER_DETAIL: '/api/v1/orders/user/detail',
+  USER_CANCEL: '/api/v1/orders/user/cancel',
+  UPDATE_STATUS: '/api/v1/orders/status/',
   },
-
   PAYMENTS: {
     USER_HISTORY: '/api/v1/payments/user/history',
     USER_DETAIL: '/api/v1/payments/user/detail',

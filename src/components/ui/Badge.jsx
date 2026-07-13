@@ -1,4 +1,4 @@
-import { cn } from '../../utils/cn';
+import { cn } from '@/utils/cn';
 
 const variantClasses = {
   success: 'bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200',

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { cn } from '../../utils/cn';
+import { cn } from '@/utils/cn';
 
 const sizeClasses = {
   sm: 'max-w-sm',

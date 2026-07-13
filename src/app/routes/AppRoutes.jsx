@@ -1,0 +1,90 @@
+// src/app/routes/AppRoutes.jsx
+import { Routes, Route } from 'react-router-dom';
+import AdminLayout from '../../components/layouts/AdminLayout';
+
+// Pages
+import DashboardPage from '@/features/dashboard/pages/DashboardPage';
+import OrdersPage from '@/features/orders/pages/OrdersPage';
+import OrderDetailPage from '@/features/orders/pages/OrderDetailPage';
+import ReturnsPage from '@/features/returns/pages/ReturnsPage';
+import CancellationsPage from '@/features/cancellations/pages/CancellationsPage';
+import PaymentsPage from '@/features/payments/pages/PaymentsPage';
+import RefundsPage from '@/features/refunds/pages/RefundsPage';
+import ReportsPage from '@/features/reports/pages/ReportsPage';
+import TransactionsPage from '@/features/payments/pages/TransactionsPage';
+import CustomersPage from '@/features/customers/pages/CustomersPage';
+import CustomerDetailPage from '@/features/customers/pages/CustomerDetailPage';
+import CustomerGroupsPage from '@/features/customerGroups/pages/CustomerGroupsPage';
+import AddCustomerGroupPage from '@/features/customerGroups/pages/AddCustomerGroupPage';
+import ProductsPage from '@/features/products/pages/ProductsPage';
+import AddProductPage from '@/features/products/pages/AddProductPage';
+import EditProductPage from '@/features/products/pages/EditProductPage';
+import ProductDetailPage from '@/features/products/pages/ProductDetailPage';
+import CategoriesPage from '@/features/categories/pages/CategoriesPage';
+import AddCategoryPage from '@/features/categories/pages/AddCategoryPage';
+import BrandsPage from '@/features/brands/pages/BrandsPage';
+import AddBrandPage from '@/features/brands/pages/AddBrandPage';
+import SettingsPage from '@/features/settings/pages/SettingsPage';
+import UsersPage from '@/features/users/pages/UsersPage';
+import NotFoundPage from '../../pages/NotFoundPage';
+import LoginPage from '@/features/auth/pages/LoginPage';
+
+export default function AppRoutes() {
+  return (
+    <Routes>
+      {/* ── Public routes ── */}
+      <Route path="/" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* ── All admin screens share the AdminLayout (sidebar + topbar + Outlet) ── */}
+      <Route path="/dashboard" element={<AdminLayout />}>
+
+        {/* Overview */}
+        <Route index element={<DashboardPage />} />
+
+        {/* Orders group */}
+        <Route path="orders" element={<OrdersPage />} />
+        <Route path="orders/:id" element={<OrderDetailPage />} />
+        <Route path="returns" element={<ReturnsPage />} />
+        <Route path="cancellations" element={<CancellationsPage />} />
+
+        {/* Payments group */}
+        <Route path="payments" element={<PaymentsPage />} />
+        <Route path="refunds" element={<RefundsPage />} />
+        <Route path="transactions" element={<TransactionsPage />} />{/* placeholder */}
+
+        {/* Customers group */}
+        <Route path="customers" element={<CustomersPage />} />
+        <Route path="customers/:id" element={<CustomerDetailPage />} />
+        <Route path="customer-groups" element={<CustomerGroupsPage />} />
+        <Route path="customer-groups/add" element={<AddCustomerGroupPage />} />
+        <Route path="customer-groups/edit/:id" element={<AddCustomerGroupPage />} />
+
+        {/* Products group */}
+        <Route path="products" element={<ProductsPage />} />
+        <Route path="products/add" element={<AddProductPage />} />
+        <Route path="products/view/:id" element={<ProductDetailPage />} />
+        <Route path="products/edit/:id" element={<EditProductPage />} />
+        <Route path="categories" element={<CategoriesPage />} />
+        <Route path="categories/add" element={<AddCategoryPage />} />
+        <Route path="categories/edit/:id" element={<AddCategoryPage />} />
+        <Route path="brands" element={<BrandsPage />} />
+        <Route path="brands/add" element={<AddBrandPage />} />
+        <Route path="brands/edit/:id" element={<AddBrandPage />} />
+
+        {/* Reports group */}
+        <Route path="sales-report" element={<ReportsPage />} />
+        <Route path="payment-report" element={<ReportsPage />} />
+        <Route path="tax-report" element={<ReportsPage />} />
+
+        {/* Settings group */}
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="users" element={<UsersPage />} />
+
+      </Route>
+
+      {/* ── Catch-all 404 – only fires when NO admin route matches ── */}
+      <Route path="*" element={<NotFoundPage />} />
+    </Routes>
+  );
+}
