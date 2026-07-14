@@ -5,6 +5,8 @@ import { HiOutlineMagnifyingGlass, HiOutlineFunnel } from 'react-icons/hi2';
 import {  orders  } from '@/features/dashboard/services/dashboard.service';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function RefundsPage() {
   const [search, setSearch] = useState('');
@@ -22,7 +24,7 @@ export default function RefundsPage() {
   const filtered = refunds.filter(r => r.orderId.toLowerCase().includes(search.toLowerCase()) || r.id.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <PageHeader 
         title="Refunds" 
         description="Manage customer refunds and financial adjustments."
@@ -87,6 +89,6 @@ export default function RefundsPage() {
           </table>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

@@ -87,14 +87,8 @@ export default function OrderFilter({
       />
 
       {/* Date */}
-      <button
-        type="button"
-        onClick={onDateClick}
-        className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 sm:w-44"
-      >
-        <HiOutlineCalendarDays className="h-4 w-4 text-slate-400" />
-        <span className="truncate">{dateLabel}</span>
-      </button>
+      <input type="date" onClick={onDateClick}
+        className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 sm:w-44" onChange={(e) => onChange?.(e.target.value)} />
 
       {/* Filters */}
       <button

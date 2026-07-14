@@ -1,9 +1,11 @@
 import SettingsForm from '../components/SettingsForm';
 import { PageHeader } from '@/components/ui';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function SettingsPage() {
   return (
-    <div>
+    <PageContainer>
       <PageHeader 
         title="Settings" 
         crumbs={[{ label: 'Dashboard', path: '/' }, { label: 'Settings' }]}
@@ -11,6 +13,6 @@ export default function SettingsPage() {
       <div className="max-w-3xl">
         <SettingsForm />
       </div>
-    </div>
+    </PageContainer>
   );
 }

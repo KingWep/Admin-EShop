@@ -22,8 +22,6 @@ const createVariant = (isDefault = false) => ({
     price: '',
     is_default: isDefault,
     operatorProductAttribute: false,
-    inventory_quantity: '',
-    warehouse_location: '',
     product_attributes: [],
 });
 
@@ -57,10 +55,6 @@ const buildSkuPayload = (variant) => ({
     quantity: parseOptionalNumber(variant.inventory_quantity),
     is_default: variant.is_default,
     operatorProductAttribute: variant.operatorProductAttribute,
-    inventory: {
-        quantity: parseOptionalNumber(variant.inventory_quantity),
-        warehouse_location: variant.warehouse_location.trim(),
-    },
     product_attributes: buildProductAttributes(variant.product_attributes),
 });
 
@@ -73,8 +67,6 @@ const apiSkuToVariant = (sku) => ({
     is_default: !!sku.is_default,
     operatorProductAttribute:
         Array.isArray(sku.product_attributes) && sku.product_attributes.length > 0,
-    inventory_quantity: String(sku.quantity ?? ''),
-    warehouse_location: sku.inventory?.warehouse_location || '',
     product_attributes: Array.isArray(sku.product_attributes)
         ? sku.product_attributes.map((attribute) => ({
             id: uid(),
@@ -100,9 +92,7 @@ export function useProducts(productId = null) {
         setSelectedCategoryId,
         handleCategoryChange: onCategoryChange,
     } = useCategories();
-
-    // Populated once, during edit-mode hydration, so useSubCategories can
-    // restore the product's existing sub-category after its list loads.
+    
     const [initialSubCategoryId, setInitialSubCategoryId] = useState(null);
 
     const {
@@ -399,12 +389,10 @@ export function useProducts(productId = null) {
         const firstInvalidVariant = variants.find((variant) => {
             return !variant.description.trim()
                 || parseOptionalNumber(variant.price) == null
-                || parseOptionalNumber(variant.inventory_quantity) == null
-                || !variant.warehouse_location.trim();
         });
 
         if (firstInvalidVariant) {
-            return 'Each SKU needs a description, price, inventory quantity, and warehouse location.';
+            return 'Each SKU needs a description, price';
         }
 
         const invalidAttributeVariant = variants.find((variant) => {

@@ -9,6 +9,7 @@ export default function LoginPage() {
     CriteriaValue: "",
     Password: "",
   });
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -17,6 +18,7 @@ export default function LoginPage() {
       [name]: value,
     }));
   }
+
   const handleLogin = async (e) => {
     e.preventDefault();
 
@@ -75,11 +77,10 @@ export default function LoginPage() {
             <input
               id="email"
               name="CriteriaValue"
-              type="text"
               value={form.CriteriaValue}
               onChange={handleChange}
               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
-              placeholder="Email or Username"
+              placeholder="admin@example.com"
               required
             />
           </div>
@@ -100,10 +101,24 @@ export default function LoginPage() {
               value={form.Password}
               onChange={handleChange}
               className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-300"
-              placeholder="strong_password"
+              placeholder="••••••••"
               required
             />
           </div>
+
+          <div className="flex items-center">
+            <input
+              id="remember_me"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="h-4 w-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-slate-900 transition-colors cursor-pointer"
+            />
+            <label htmlFor="remember_me" className="ml-2 block text-sm text-slate-400 cursor-pointer select-none">
+              Remember me
+            </label>
+          </div>
+
           <button
             type="submit"
             className="w-full py-3 px-4 rounded-xl text-white font-semibold bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 transform hover:-translate-y-0.5 transition-all duration-300 shadow-lg shadow-indigo-500/25"

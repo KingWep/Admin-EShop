@@ -5,13 +5,15 @@ import ExportButton from '../components/ExportButton';
 import { Select } from '@/components/ui/Input';
 
 import { PageHeader } from '@/components/ui';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function ReportsPage() {
   const [category, setCategory] = useState('');
   const [dateRange, setDateRange] = useState('Last 30 days');
 
   return (
-    <div>
+    <PageContainer>
       <PageHeader 
         title="Reports" 
         crumbs={[{ label: 'Dashboard', path: '/' }, { label: 'Reports' }]}
@@ -33,6 +35,6 @@ export default function ReportsPage() {
       </div>
 
       <ReportCharts />
-    </div>
+    </PageContainer>
   );
 }

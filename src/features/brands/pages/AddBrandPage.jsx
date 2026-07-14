@@ -6,6 +6,8 @@ import { HiOutlineCloudArrowUp, HiOutlineInformationCircle } from 'react-icons/h
 import Button from '@/components/ui/Button';
 import { categoryApi } from '../../categories/services/category.service';
 import { brandService } from '@/features/brands/services/brand.service';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function AddBrandPage() {
   const navigate = useNavigate();
@@ -140,7 +142,7 @@ export default function AddBrandPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 pb-12">
+    <PageContainer>
       <div className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">{isEdit ? 'Edit Brand' : 'Add Brand'}</h2>
@@ -278,6 +280,6 @@ export default function AddBrandPage() {
           </div>
         </div>
       </form>
-    </div>
+    </PageContainer>
   );
 }

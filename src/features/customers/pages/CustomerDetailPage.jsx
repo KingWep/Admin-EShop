@@ -1,6 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import CustomerDetail from '../components/CustomerDetail';
 import {  customers, orders  } from '@/features/dashboard/services/dashboard.service';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function CustomerDetailPage() {
   const { id } = useParams();
@@ -10,12 +12,12 @@ export default function CustomerDetailPage() {
 
   if (!customer) {
     return (
-      <div className="card flex flex-col items-center py-20 text-center">
+      <PageContainer>
         <h3 className="text-lg font-semibold text-slate-700">Customer not found</h3>
         <button onClick={() => navigate('/dashboard/customers')} className="mt-4 text-sm text-indigo-600 hover:underline">
           ← Back to Customers
         </button>
-      </div>
+      </PageContainer>
     );
   }
 

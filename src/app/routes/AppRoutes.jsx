@@ -1,4 +1,3 @@
-// src/app/routes/AppRoutes.jsx
 import { Routes, Route } from 'react-router-dom';
 import AdminLayout from '../../components/layouts/AdminLayout';
 
@@ -24,6 +23,7 @@ import CategoriesPage from '@/features/categories/pages/CategoriesPage';
 import AddCategoryPage from '@/features/categories/pages/AddCategoryPage';
 import BrandsPage from '@/features/brands/pages/BrandsPage';
 import AddBrandPage from '@/features/brands/pages/AddBrandPage';
+import InventoryPage from '@/features/inventory/pages/InventoryPage';
 import SettingsPage from '@/features/settings/pages/SettingsPage';
 import UsersPage from '@/features/users/pages/UsersPage';
 import NotFoundPage from '../../pages/NotFoundPage';
@@ -71,6 +71,7 @@ export default function AppRoutes() {
         <Route path="brands" element={<BrandsPage />} />
         <Route path="brands/add" element={<AddBrandPage />} />
         <Route path="brands/edit/:id" element={<AddBrandPage />} />
+        <Route path="inventory" element={<InventoryPage />} />
 
         {/* Reports group */}
         <Route path="sales-report" element={<ReportsPage />} />

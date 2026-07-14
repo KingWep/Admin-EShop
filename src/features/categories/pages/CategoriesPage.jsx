@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CategoriesTable from '../components/CategoriesTable';
+import CategoriesFilter from '../components/CategoriesFilter';
 import { Button, PageHeader } from '@/components/ui';
-import {  categoryStats  } from '@/features/reports/components/PageStats';
+import { categoryStats } from '@/features/reports/components/PageStats';
 import { HiPlus } from 'react-icons/hi2';
 import { categoryApi } from '@/features/categories/services/category.service';
+import PageContainer from '@/components/layouts/PageContainer';
 
 export default function CategoriesPage() {
   const navigate = useNavigate();
@@ -14,13 +16,17 @@ export default function CategoriesPage() {
   const [page] = useState(0);
   const [size] = useState(10);
 
+  // Filter state
+  const [search, setSearch] = useState('');
+
+  const hasActive = !!search;
+
   const fetchCategories = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const res = await categoryApi.getAll(page, size);
       const raw = Array.isArray(res) ? res : (res?.data ?? res?.content ?? res?.items ?? []);
-      // console.log('Fetched categories:', raw);
       const list = raw
         .map(item => (item?.data != null ? item.data : item))
         .filter(item => item && item.id != null);
@@ -52,8 +58,22 @@ export default function CategoriesPage() {
     }
   };
 
+  // Client-side filtering
+  const filteredCategories = useMemo(() => {
+    if (!search.trim()) return categories;
+    const q = search.toLowerCase();
+    return categories.filter(cat =>
+      cat.name?.toLowerCase().includes(q) ||
+      cat.description?.toLowerCase().includes(q)
+    );
+  }, [categories, search]);
+
+  const handleReset = () => {
+    setSearch('');
+  };
+
   return (
-    <div>
+    <PageContainer>
       <PageHeader
         title="Categories"
         crumbs={[{ label: 'Dashboard', path: '/dashboard' }, { label: 'Products', path: '/dashboard/products' }, { label: 'Categories' }]}
@@ -64,6 +84,14 @@ export default function CategoriesPage() {
           Add Category
         </Button>
       </PageHeader>
+
+      {/* Filter Bar */}
+      <CategoriesFilter
+        search={search}
+        onSearch={setSearch}
+        onReset={handleReset}
+        hasActive={hasActive}
+      />
 
       {loading && (
         <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
@@ -78,10 +106,10 @@ export default function CategoriesPage() {
       )}
 
       <CategoriesTable
-        categories={categories}
+        categories={filteredCategories}
         onEdit={(cat) => navigate(`/dashboard/categories/edit/${cat.id}`)}
         onDelete={handleDelete}
       />
-    </div>
+    </PageContainer>
   );
 }

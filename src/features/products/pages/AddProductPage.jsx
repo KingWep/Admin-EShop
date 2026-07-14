@@ -3,6 +3,8 @@ import Button from '@/components/ui/Button';
 import ImageUploadInput from '@/components/ui/ImageUploadInput';
 import { Card } from '@/components/ui/Card';
 import { useProducts } from '@/features/products/hooks/useProducts';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function AddProductForm() {
   const {
@@ -49,14 +51,13 @@ export default function AddProductForm() {
     addAttributeValue,
     updateAttributeValue,
     removeAttributeValue,
-
     // actions
     handleCancel,
     handleSubmit,
   } = useProducts();
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-7xl mx-auto p-4">
+    <PageContainer>
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-xl font-bold">Add Product</h1>
@@ -64,7 +65,7 @@ export default function AddProductForm() {
         </div>
         <div className="flex gap-3">
           <Button type="button" variant="secondary" onClick={handleCancel}>Cancel</Button>
-          <Button type="submit" loading={submitting}>Save Product</Button>
+          <Button type="button" onClick={handleSubmit} loading={submitting}>Save Product</Button>
         </div>
       </div>
 
@@ -200,7 +201,7 @@ export default function AddProductForm() {
                         value={variant.price}
                         onChange={(e) => updateVariant(variant.id, 'price', e.target.value)}
                       />
-                      <Input
+                      {/* <Input
                         label="Inventory Quantity *"
                         type="number"
                         min="0"
@@ -214,7 +215,7 @@ export default function AddProductForm() {
                         placeholder="Warehouse A"
                         value={variant.warehouse_location}
                         onChange={(e) => updateVariant(variant.id, 'warehouse_location', e.target.value)}
-                      />
+                      /> */}
                     </div>
 
                     <div className="mt-5 space-y-3">
@@ -321,6 +322,6 @@ export default function AddProductForm() {
           </Card>
         </div>
       </div>
-    </form>
+    </PageContainer>
   );
 }

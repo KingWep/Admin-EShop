@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { HiOutlineUserGroup, HiOutlineInformationCircle } from 'react-icons/hi2';
 import Button from '@/components/ui/Button';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function AddCustomerGroupPage() {
   const navigate = useNavigate();
@@ -32,7 +34,7 @@ export default function AddCustomerGroupPage() {
   }, [isEdit, id]);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 pb-12">
+    <PageContainer>
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4">
         <div>
@@ -180,6 +182,6 @@ export default function AddCustomerGroupPage() {
           </div>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

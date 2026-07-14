@@ -3,10 +3,12 @@ import { PageHeader } from '@/components/ui';
 import TransactionsTable from '../components/TransactionsTable';
 import {  paymentDetails, paymentStats  } from '@/features/payments/services/payment.service';
 import { HiOutlineArrowDownTray, HiOutlineChevronDown } from 'react-icons/hi2';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function TransactionsPage() {
   return (
-    <div>
+    <PageContainer>
       {/* ── Page header ── */}
       <PageHeader
         title="Transactions"
@@ -25,6 +27,6 @@ export default function TransactionsPage() {
         transactions={paymentDetails}
         stats={paymentStats}
       />
-    </div>
+    </PageContainer>
   );
 }

@@ -7,6 +7,8 @@ import {  adminUsers, roles  } from '@/features/dashboard/services/dashboard.ser
 import { useModal } from '@/hooks/useModal';
 import { HiPlus } from 'react-icons/hi2';
 import { cn } from '@/utils/cn';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 const TABS = ['Users', 'Roles', 'Permissions'];
 
@@ -21,7 +23,7 @@ export default function UsersPage() {
   };
 
   return (
-    <div>
+    <PageContainer>
       <PageHeader 
         title="Users & Roles" 
         crumbs={[{ label: 'Dashboard', path: '/' }, { label: 'Settings' }, { label: 'Users & Roles' }]}
@@ -103,6 +105,6 @@ export default function UsersPage() {
           New user form — fields will be connected to the backend API in the next phase.
         </p>
       </Modal>
-    </div>
+    </PageContainer>
   );
 }

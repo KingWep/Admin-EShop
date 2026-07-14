@@ -1,0 +1,191 @@
+export const mockInventoryData = [
+  {
+    id: 1,
+    name: 'Nike Air Max 270',
+    variant: 'Black / 9',
+    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=100',
+    sku: 'NK270-BLK-9',
+    barcode: '1234567890123',
+    warehouse: 'Main Warehouse',
+    stockQty: 50,
+    reservedQty: 5,
+    availableQty: 45,
+    lowStockThreshold: 10,
+    status: 'In Stock',
+    stockValue: 6750.00,
+    lastUpdated: 'May 20, 2024 10:24 AM',
+    category: 'Footwear',
+    brand: 'Nike',
+    created: 'Apr 15, 2024 09:30 AM',
+    history: [
+      { id: 1, type: 'update', label: 'Stock Updated', delta: '+10 units', date: 'May 20, 2024 10:24 AM', user: 'by John Admin' },
+      { id: 2, type: 'adjust', label: 'Stock Adjusted', delta: '-2 units', date: 'May 18, 2024 02:15 PM', user: 'by Sarah Manager' },
+      { id: 3, type: 'add', label: 'Stock Added', delta: '+50 units', date: 'May 15, 2024 09:30 AM', user: 'by John Admin' }
+    ],
+    warehouseStock: [
+      { warehouse: 'Main Warehouse', isPrimary: true, stockQty: 50, reserved: 5, available: 45 },
+      { warehouse: 'Secondary Warehouse', isPrimary: false, stockQty: 0, reserved: 0, available: 0 }
+    ]
+  },
+  {
+    id: 2,
+    name: 'Adidas Ultraboost 22',
+    variant: 'White / 10',
+    image: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&q=80&w=100',
+    sku: 'ADU22-WHT-10',
+    barcode: '1234567890124',
+    warehouse: 'Main Warehouse',
+    stockQty: 32,
+    reservedQty: 2,
+    availableQty: 30,
+    lowStockThreshold: 8,
+    status: 'In Stock',
+    stockValue: 5280.00,
+    lastUpdated: 'May 20, 2024 09:15 AM',
+    category: 'Footwear',
+    brand: 'Adidas',
+    created: 'Apr 12, 2024 11:20 AM',
+    history: [],
+    warehouseStock: [
+      { warehouse: 'Main Warehouse', isPrimary: true, stockQty: 32, reserved: 2, available: 30 }
+    ]
+  },
+  {
+    id: 3,
+    name: 'Puma RS-X',
+    variant: 'Black / 8',
+    image: 'https://images.unsplash.com/photo-1608231387042-66d1773070a5?auto=format&fit=crop&q=80&w=100',
+    sku: 'PUMA-RSX-BLK-8',
+    barcode: '1234567890125',
+    warehouse: 'Main Warehouse',
+    stockQty: 6,
+    reservedQty: 1,
+    availableQty: 5,
+    lowStockThreshold: 10,
+    status: 'Low Stock',
+    stockValue: 750.00,
+    lastUpdated: 'May 19, 2024 04:45 PM',
+    category: 'Footwear',
+    brand: 'Puma',
+    created: 'Apr 10, 2024 08:15 AM',
+    history: [],
+    warehouseStock: [
+      { warehouse: 'Main Warehouse', isPrimary: true, stockQty: 6, reserved: 1, available: 5 }
+    ]
+  },
+  {
+    id: 4,
+    name: 'Levi\'s 501 Jeans',
+    variant: 'Blue / 32',
+    image: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&q=80&w=100',
+    sku: 'LEVI-501-BLU-32',
+    barcode: '1234567890126',
+    warehouse: 'Main Warehouse',
+    stockQty: 0,
+    reservedQty: 0,
+    availableQty: 0,
+    lowStockThreshold: 5,
+    status: 'Out of Stock',
+    stockValue: 0.00,
+    lastUpdated: 'May 16, 2024 11:30 AM',
+    category: 'Apparel',
+    brand: 'Levi\'s',
+    created: 'Mar 20, 2024 10:00 AM',
+    history: [],
+    warehouseStock: [
+      { warehouse: 'Main Warehouse', isPrimary: true, stockQty: 0, reserved: 0, available: 0 }
+    ]
+  },
+  {
+    id: 5,
+    name: 'Herschel Backpack',
+    variant: 'Gray',
+    image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&q=80&w=100',
+    sku: 'HERS-GRY',
+    barcode: '1234567890127',
+    warehouse: 'Secondary Warehouse',
+    stockQty: 15,
+    reservedQty: 3,
+    availableQty: 12,
+    lowStockThreshold: 5,
+    status: 'In Stock',
+    stockValue: 1200.00,
+    lastUpdated: 'May 18, 2024 02:20 PM',
+    category: 'Accessories',
+    brand: 'Herschel',
+    created: 'Feb 15, 2024 09:00 AM',
+    history: [],
+    warehouseStock: [
+      { warehouse: 'Secondary Warehouse', isPrimary: true, stockQty: 15, reserved: 3, available: 12 }
+    ]
+  },
+  {
+    id: 6,
+    name: 'Sony WH-1000XM4',
+    variant: 'Black',
+    image: 'https://images.unsplash.com/photo-1618366712010-f4ae9c647dcb?auto=format&fit=crop&q=80&w=100',
+    sku: 'SONY-WH-1000XM4',
+    barcode: '1234567890128',
+    warehouse: 'Secondary Warehouse',
+    stockQty: 4,
+    reservedQty: 1,
+    availableQty: 3,
+    lowStockThreshold: 5,
+    status: 'Low Stock',
+    stockValue: 1047.96,
+    lastUpdated: 'May 18, 2024 10:05 AM',
+    category: 'Electronics',
+    brand: 'Sony',
+    created: 'Jan 10, 2024 11:00 AM',
+    history: [],
+    warehouseStock: [
+      { warehouse: 'Secondary Warehouse', isPrimary: true, stockQty: 4, reserved: 1, available: 3 }
+    ]
+  },
+  {
+    id: 7,
+    name: 'Fossil Gen 6 Watch',
+    variant: 'Black',
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=100',
+    sku: 'FOS-GEN6-BLK',
+    barcode: '1234567890129',
+    warehouse: 'Main Warehouse',
+    stockQty: 20,
+    reservedQty: 2,
+    availableQty: 18,
+    lowStockThreshold: 5,
+    status: 'In Stock',
+    stockValue: 3160.00,
+    lastUpdated: 'May 17, 2024 03:50 PM',
+    category: 'Watches',
+    brand: 'Fossil',
+    created: 'Dec 05, 2023 02:30 PM',
+    history: [],
+    warehouseStock: [
+      { warehouse: 'Main Warehouse', isPrimary: true, stockQty: 20, reserved: 2, available: 18 }
+    ]
+  },
+  {
+    id: 8,
+    name: 'Ray-Ban Aviator',
+    variant: 'Gold',
+    image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&q=80&w=100',
+    sku: 'RB-AVI-GOLD',
+    barcode: '1234567890130',
+    warehouse: 'Secondary Warehouse',
+    stockQty: 1,
+    reservedQty: 0,
+    availableQty: 1,
+    lowStockThreshold: 3,
+    status: 'Low Stock',
+    stockValue: 164.00,
+    lastUpdated: 'May 17, 2024 09:40 AM',
+    category: 'Accessories',
+    brand: 'Ray-Ban',
+    created: 'Nov 20, 2023 10:15 AM',
+    history: [],
+    warehouseStock: [
+      { warehouse: 'Secondary Warehouse', isPrimary: true, stockQty: 1, reserved: 0, available: 1 }
+    ]
+  }
+];

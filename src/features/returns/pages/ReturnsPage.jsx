@@ -4,6 +4,8 @@ import {  returns as initialReturns  } from '@/features/dashboard/services/dashb
 import Badge from '@/components/ui/Badge';
 import { PageHeader } from '@/components/ui';
 import {  returnStats  } from '@/features/reports/components/PageStats';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function ReturnsPage() {
   const [returns, setReturns] = useState(initialReturns);
@@ -25,7 +27,7 @@ export default function ReturnsPage() {
   };
 
   return (
-    <div>
+    <PageContainer>
       <PageHeader
         title="Returns"
         description="Process and track customer product returns."
@@ -38,6 +40,6 @@ export default function ReturnsPage() {
         onApprove={handleApprove}
         onReject={handleReject}
       />
-    </div>
+    </PageContainer>
   );
 }

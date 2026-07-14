@@ -1,10 +1,12 @@
 import PaymentDetailsTable from '../components/PaymentDetailsTable';
 import {  paymentDetails, paymentStats  } from '@/features/payments/services/payment.service';
 import { PageHeader } from '@/components/ui';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function PaymentsPage() {
   return (
-    <div>
+    <PageContainer>
       <PageHeader
         title="Payment Details"
         description="Summary of all payments for the selected period"
@@ -14,6 +16,6 @@ export default function PaymentsPage() {
         ]}
       />
       <PaymentDetailsTable payments={paymentDetails} stats={paymentStats} />
-    </div>
+    </PageContainer>
   );
 }

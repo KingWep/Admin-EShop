@@ -6,6 +6,8 @@ import OrderFilter from '../components/OrderFilter';
 import Pagination from '@/components/ui/Pagination';
 import { useOrders } from '../hooks/useOrders';
 import { HiOutlineCalendarDays, HiOutlineChevronDown, HiOutlineArrowDownTray } from 'react-icons/hi2';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function OrdersPage() {
   const [params, setParams] = useState({
@@ -55,7 +57,7 @@ export default function OrdersPage() {
   };
 
   return (
-    <div>
+    <PageContainer>
       <PageHeader
         title="History Order Details"
         crumbs={[{ label: 'Dashboard', path: '/' }, { label: 'Orders' }, { label: 'History Order Details' }]}
@@ -102,6 +104,6 @@ export default function OrdersPage() {
           )}
         </>
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -4,6 +4,8 @@ import { HiOutlineMagnifyingGlass } from 'react-icons/hi2';
 import { useState } from 'react';
 import { PageHeader } from '@/components/ui';
 import {  customerStats  } from '@/features/reports/components/PageStats';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function CustomersPage() {
   const [search, setSearch] = useState('');
@@ -14,7 +16,7 @@ export default function CustomersPage() {
   });
 
   return (
-    <div>
+    <PageContainer>
       <PageHeader
         title="Customers"
         description="View and manage customer profiles and activity."
@@ -37,6 +39,6 @@ export default function CustomersPage() {
       </div>
 
       <CustomersTable customers={filtered} />
-    </div>
+    </PageContainer>
   );
 }

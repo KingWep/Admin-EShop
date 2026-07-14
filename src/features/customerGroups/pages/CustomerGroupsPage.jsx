@@ -4,11 +4,13 @@ import { PageHeader } from '@/components/ui';
 import CustomerGroupsTable from '../components/CustomerGroupsTable';
 import {  customerGroups, customerGroupStats  } from '@/features/customerGroups/services/customerGroup.service';
 import { HiPlus } from 'react-icons/hi2';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function CustomerGroupsPage() {
   const navigate = useNavigate();
   return (
-    <div>
+    <PageContainer>
       {/* ── Page header ── */}
       <PageHeader
         title="Customer Groups"
@@ -33,6 +35,6 @@ export default function CustomerGroupsPage() {
         stats={customerGroupStats}
         onEdit={(group) => navigate(`/dashboard/customer-groups/edit/${group.id}`)}
       />
-    </div>
+    </PageContainer>
   );
 }

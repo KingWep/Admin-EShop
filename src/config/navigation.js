@@ -16,6 +16,7 @@ export const NAV_ITEMS = [
   { path: '/dashboard/products', label: 'Products', icon: 'products', group: 'products' },
   { path: '/dashboard/categories', label: 'Categories', icon: 'categories', group: 'products' },
   { path: '/dashboard/brands', label: 'Brands', icon: 'brands', group: 'products' },
+  { path: '/dashboard/inventory', label: 'Inventory', icon: 'inventory', group: 'products' },
   { path: '/dashboard/sales-report', label: 'Sales Report', icon: 'reports', group: 'reports' },
   { path: '/dashboard/payment-report', label: 'Payment Report', icon: 'reports', group: 'reports' },
   { path: '/dashboard/tax-report', label: 'Tax Report', icon: 'reports', group: 'reports' },

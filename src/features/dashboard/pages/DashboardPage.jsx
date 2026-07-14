@@ -8,12 +8,14 @@ import OrdersChart from '../components/OrdersChart';
 import RecentOrdersTable from '../components/RecentOrdersTable';
 import {  dashboardStats, salesChartData, ordersChartData, orders  } from '@/features/dashboard/services/dashboard.service';
 import { PageHeader } from '@/components/ui';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function DashboardPage() {
   const recentOrders = orders.slice(0, 6);
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <PageHeader 
         title="Dashboard" 
         crumbs={[{ label: 'Dashboard' }]}
@@ -71,6 +73,6 @@ export default function DashboardPage() {
 
       {/* Recent orders */}
       <RecentOrdersTable orders={recentOrders} />
-    </div>
+    </PageContainer>
   );
 }

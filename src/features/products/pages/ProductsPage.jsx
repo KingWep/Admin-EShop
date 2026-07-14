@@ -9,6 +9,8 @@ import { Button, PageHeader } from '@/components/ui';
 import { HiPlus } from 'react-icons/hi2';
 import {  productStats  } from '@/features/reports/components/PageStats';
 import { productApi } from '@/features/products/services/product.service';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 const CRITERIA_TYPE = {
   ALL: 0,
@@ -132,7 +134,7 @@ export default function ProductsPage() {
   };
 
   return (
-    <div>
+    <PageContainer>
       <PageHeader
         title="Products"
         description="Manage your product inventory and pricing."
@@ -191,6 +193,6 @@ export default function ProductsPage() {
           />
         </>
       )}
-    </div>
+    </PageContainer>
   );
 }

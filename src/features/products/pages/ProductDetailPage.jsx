@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Button, PageHeader, Badge, PageLoader } from '@/components/ui';
 import { Card } from '@/components/ui/Card';
 import { productService } from '@/features/products/services/product.service';
+import PageContainer from '@/components/layouts/PageContainer';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -49,7 +50,7 @@ export default function ProductDetailPage() {
 
   if (error) {
     return (
-      <div className="space-y-6">
+      <PageContainer>
         <PageHeader
           title="Product details"
           crumbs={[
@@ -64,14 +65,14 @@ export default function ProductDetailPage() {
         <Link to="/dashboard/products">
           <Button variant="secondary">Back to Products</Button>
         </Link>
-      </div>
+      </PageContainer>
     );
   }
 
   if (!product) return null;
 
   return (
-    <div className="space-y-6">
+    <PageContainer className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <PageHeader
           title="Product details"
@@ -201,6 +202,6 @@ export default function ProductDetailPage() {
           </Card>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

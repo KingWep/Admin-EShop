@@ -5,6 +5,8 @@ import { HiOutlineMagnifyingGlass, HiOutlineFunnel } from 'react-icons/hi2';
 import {  orders  } from '@/features/dashboard/services/dashboard.service';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function CancellationsPage() {
   const [search, setSearch] = useState('');
@@ -20,7 +22,7 @@ export default function CancellationsPage() {
   const filtered = cancellations.filter(c => c.id.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       <PageHeader 
         title="Cancellations" 
         description="Review and process order cancelation requests."
@@ -83,6 +85,6 @@ export default function CancellationsPage() {
           </table>
         </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

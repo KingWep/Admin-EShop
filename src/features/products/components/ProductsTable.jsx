@@ -22,7 +22,7 @@ export default function ProductsTable({ products, onDelete }) {
   };
 
   const sorted = [...products].sort((a, b) => {
-    const mul = sortDir === 'asc' ? 1 : -1;
+    const mul = sortDir === 'desc' ? 1 : -1;
     if (typeof a[sortKey] === 'string') return a[sortKey].localeCompare(b[sortKey]) * mul;
     return (a[sortKey] - b[sortKey]) * mul;
   });

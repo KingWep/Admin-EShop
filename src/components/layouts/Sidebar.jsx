@@ -7,7 +7,7 @@ import {
   HiOutlineBuildingStorefront, HiOutlineClipboardDocumentList,
   HiOutlineUsers, HiOutlineCreditCard, HiOutlineChartBar,
   HiOutlineCog6Tooth, HiOutlineUserGroup, HiOutlineArrowPath,
-  HiOutlineXMark,
+  HiOutlineXMark, HiOutlineArchiveBox,
 } from 'react-icons/hi2';
 
 const ICONS = {
@@ -23,6 +23,7 @@ const ICONS = {
   products:   HiOutlineShoppingBag,
   categories: HiOutlineTag,
   brands:     HiOutlineBuildingStorefront,
+  inventory:  HiOutlineArchiveBox,
   reports:    HiOutlineChartBar,
   settings:   HiOutlineCog6Tooth,
   users:      HiOutlineUserGroup,

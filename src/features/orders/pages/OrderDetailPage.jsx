@@ -2,6 +2,8 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import OrderDetail from '../components/OrderDetail';
 import { useOrderDetail } from '../hooks/useOrderDetail';
 import { PageHeader } from '@/components/ui';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 export default function OrderDetailPage() {
   const { id } = useParams();
@@ -17,7 +19,7 @@ export default function OrderDetailPage() {
 
   if (error || !order) {
     return (
-      <div className="flex flex-col items-center justify-center p-8">
+      <PageContainer>
         <p className="text-slate-500 mb-4">{error || 'Order not found.'}</p>
         <button 
           onClick={() => navigate('/dashboard/orders')}
@@ -25,7 +27,7 @@ export default function OrderDetailPage() {
         >
           Back to Orders
         </button>
-      </div>
+      </PageContainer>
     );
   }
 

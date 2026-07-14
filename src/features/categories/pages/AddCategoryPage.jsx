@@ -4,6 +4,8 @@ import { HiOutlineInformationCircle, HiOutlineCheckCircle } from 'react-icons/hi
 import Button from '@/components/ui/Button';
 import { categoryApi } from '@/features/categories/services/category.service';
 import { categoryIconApi } from '@/features/categories/services/categoryIcon.service';
+import PageContainer from '@/components/layouts/PageContainer';
+
 
 // Tries every field name we've seen APIs use for an icon image, in order.
 const getIconImageUrl = (icon) => {
@@ -164,7 +166,7 @@ export default function AddCategoryPage() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-6xl space-y-6 pb-12">
+    <PageContainer>
       <div className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">{isEdit ? 'Edit Category' : 'Add Category'}</h2>
@@ -364,6 +366,6 @@ export default function AddCategoryPage() {
           </div>
         </div>
       </div>
-    </form>
+    </PageContainer>
   );
 }
