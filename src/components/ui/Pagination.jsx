@@ -19,11 +19,12 @@ export default function Pagination({
   totalResults,
   onPageChange,
 }) {
-  if (totalPages <= 1) return null;
-
-  const pages = getPageNumbers(pageNumber, totalPages);
-
   const showResultsSummary = typeof pageSize === 'number' && typeof totalResults === 'number';
+  
+  if (totalPages <= 1 && !showResultsSummary) return null;
+
+  const pages = getPageNumbers(pageNumber, Math.max(1, totalPages));
+
   const rangeStart = totalResults === 0 ? 0 : (pageNumber - 1) * pageSize + 1;
   const rangeEnd = Math.min(pageNumber * pageSize, totalResults);
 

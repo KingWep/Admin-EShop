@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import OrdersTable from '../components/OrdersTable';
 import { PageHeader } from '@/components/ui';
 import { orderStats } from '@/features/reports/components/PageStats';
@@ -7,17 +7,105 @@ import Pagination from '@/components/ui/Pagination';
 import { useOrders } from '../hooks/useOrders';
 import { HiOutlineCalendarDays, HiOutlineChevronDown, HiOutlineArrowDownTray } from 'react-icons/hi2';
 import PageContainer from '@/components/layouts/PageContainer';
-
+import { CriteriaType } from '../types/orderTypes';
 
 export default function OrdersPage() {
-  const [params, setParams] = useState({
+  const [pagination, setPagination] = useState({
     page: 1,
     size: 10,
-    status: 'all',
-    search: '',
   });
 
-  const { orders, loading, totalPages, summary, fetchOrders, updateOrderStatus, cancelOrder } = useOrders(params);
+  const [filters, setFilters] = useState({
+    search: '',
+    orderStatus: 'ALL',
+    paymentMethod: 'all',
+    date: '',
+  });
+
+  const params = useMemo(() => {
+    let criteriaType = CriteriaType.ALL;
+    let criteriaValue = "";
+
+    const p = {
+      page: pagination.page,
+      size: pagination.size,
+      criteria_type: criteriaType,
+      criteria_value: criteriaValue,
+    };
+
+    if (filters.search) p.orderNumber = filters.search.trim();
+
+    return p;
+  }, [pagination, filters.search]);
+
+  const { orders: allOrders, loading, totalPages, totalElements, summary, fetchOrders, updateOrderStatus, cancelOrder } = useOrders(params);
+
+  const filteredOrders = useMemo(() => {
+    return (allOrders || []).filter(order => {
+      const status = filters.orderStatus;
+      const paymentMethod = filters.paymentMethod;
+      const selectedDate = filters.date;
+
+      if (status && status !== 'ALL' && status !== 'All Status') {
+        if (order.status?.toUpperCase() !== status.toUpperCase()) return false;
+      }
+
+      if (paymentMethod && paymentMethod !== 'all' && paymentMethod !== 'All Payment Methods') {
+        if (order.payment?.payment_method?.toUpperCase() !== paymentMethod.toUpperCase()) return false;
+      }
+
+      if (selectedDate) {
+        const d = order.order_date || order.created_at || order.createdAt || order.date;
+        if (!d) return false;
+
+        let matched = false;
+        const dStr = String(d);
+
+        // 1. Direct string match (handles if backend string is already exactly matching)
+        if (dStr.includes(selectedDate)) {
+          matched = true;
+        }
+
+        // 2. Format explicitly to Cambodia timezone (UTC+7)
+        if (!matched) {
+          const getCambodiaDateString = (dateInput) => {
+            const orderDateObj = new Date(dateInput);
+            if (!isNaN(orderDateObj.getTime())) {
+              const formatter = new Intl.DateTimeFormat('en-US', {
+                timeZone: 'Asia/Phnom_Penh',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+              });
+              const parts = formatter.formatToParts(orderDateObj);
+              let year, month, day;
+              for (const part of parts) {
+                if (part.type === 'year') year = part.value;
+                if (part.type === 'month') month = part.value;
+                if (part.type === 'day') day = part.value;
+              }
+              return `${year}-${month}-${day}`;
+            }
+            return null;
+          };
+
+          // Try parsing the date as-is
+          if (getCambodiaDateString(d) === selectedDate) {
+            matched = true;
+          }
+          // If no 'Z' and no offset at the end, backend might have sent UTC implicitly. Try forcing UTC.
+          else if (!dStr.endsWith('Z') && dStr.includes('T')) {
+            if (getCambodiaDateString(dStr + 'Z') === selectedDate) {
+              matched = true;
+            }
+          }
+        }
+
+        if (!matched) return false;
+      }
+      return true;
+    });
+  }, [allOrders, filters.orderStatus, filters.paymentMethod, filters.date]);
 
   // Map the real summary data to the stats array
   const mappedStats = orderStats.map(stat => {
@@ -49,11 +137,22 @@ export default function OrdersPage() {
   }, [params, fetchOrders]);
 
   const handlePageChange = (newPage) => {
-    setParams(prev => ({ ...prev, page: newPage }));
+    setPagination(prev => ({ ...prev, page: newPage }));
   };
 
   const handleFilterChange = (newFilters) => {
-    setParams(prev => ({ ...prev, ...newFilters, page: 1 })); // reset page on filter change
+    setFilters(prev => ({ ...prev, ...newFilters }));
+    setPagination(prev => ({ ...prev, page: 1 }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      search: '',
+      orderStatus: 'ALL',
+      paymentMethod: 'all',
+      date: '',
+    });
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   return (
@@ -76,29 +175,36 @@ export default function OrdersPage() {
           </button>
         </div>
       </PageHeader>
-      
-      <OrderFilter 
-        search={params.search}
+
+      <OrderFilter
+        search={filters.search}
         onSearchChange={(search) => handleFilterChange({ search })}
-        status={params.status}
-        onStatusChange={(status) => handleFilterChange({ status })}
+        orderStatus={filters.orderStatus}
+        onOrderStatusChange={(orderStatus) => handleFilterChange({ orderStatus })}
+        paymentMethod={filters.paymentMethod}
+        onPaymentMethodChange={(paymentMethod) => handleFilterChange({ paymentMethod })}
+        date={filters.date}
+        onDateChange={(date) => handleFilterChange({ date })}
+        onClearFilters={handleClearFilters}
       />
-      
+
       {loading ? (
         <div className="flex justify-center p-8 text-slate-500">Loading orders...</div>
       ) : (
         <>
-          <OrdersTable 
-            orders={orders} 
+          <OrdersTable
+            orders={filteredOrders}
             onUpdateStatus={(id, status) => updateOrderStatus(id, status, params)}
             onCancel={(id, userId, reason) => cancelOrder(id, userId, reason, params)}
           />
-          {totalPages > 1 && (
+          {(totalPages > 1 || filteredOrders.length !== (allOrders || []).length || totalElements > 0) && (
             <div className="mt-4">
-              <Pagination 
-                pageNumber={params.page} 
-                totalPages={totalPages} 
-                onPageChange={handlePageChange} 
+              <Pagination
+                pageNumber={params.page}
+                totalPages={filters.orderStatus !== 'ALL' || filters.paymentMethod !== 'all' || filters.date !== '' ? Math.max(1, Math.ceil(filteredOrders.length / pagination.size)) : totalPages}
+                pageSize={pagination.size}
+                totalResults={filters.orderStatus !== 'ALL' || filters.paymentMethod !== 'all' || filters.date !== '' ? filteredOrders.length : totalElements}
+                onPageChange={handlePageChange}
               />
             </div>
           )}

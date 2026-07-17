@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Table from '@/components/ui/Table';
 import { formatCurrency } from '@/utils/formatCurrency';
-import { HiOutlineEye, HiOutlinePencil } from 'react-icons/hi2';
+import { HiOutlineEye, HiOutlinePencil, HiCheck, HiXMark } from 'react-icons/hi2';
 import { MdCancel } from "react-icons/md";
 import Swal from 'sweetalert2';
+import { OrderStatus } from '../types/orderTypes';
 
 // Mock Payment logos mapped
 const VisaLogo = () => <span className="font-bold text-blue-800 italic mr-2 text-xs">VISA</span>;
@@ -13,7 +15,11 @@ const UpiLogo = () => <span className="font-bold text-slate-700 italic mr-2 text
 
 export default function OrdersTable({ orders, onUpdateStatus, onCancel }) {
   const navigate = useNavigate();
+  const statuses = Object.values(OrderStatus);
   
+  const [editingRowId, setEditingRowId] = useState(null);
+  const [editStatusValue, setEditStatusValue] = useState('');
+
   const handleCancelClick = (row) => {
     Swal.fire({
       title: 'Cancel Order?',
@@ -27,7 +33,7 @@ export default function OrdersTable({ orders, onUpdateStatus, onCancel }) {
       inputPlaceholder: 'Reason for cancellation (optional)',
     }).then((result) => {
       if (result.isConfirmed) {
-        const userId = row.userId || row.customer?.id || row.user?.id || 1; 
+        const userId = row.customer_id || row.userId || row.customer?.id || row.user?.id || 1; 
         onCancel(row.id, userId, result.value);
       }
     });
@@ -93,30 +99,88 @@ export default function OrdersTable({ orders, onUpdateStatus, onCancel }) {
       render: (_, row) => {
         const status = (row.payment?.status || 'PENDING').toUpperCase();
         let bg = 'bg-slate-100', text = 'text-slate-600';
-        let label = 'Pending';
-        if (status === 'COMPLETED' || status === 'PAID') { bg = 'bg-emerald-100'; text = 'text-emerald-700'; label = 'Success'; }
-        else if (status === 'PENDING') { bg = 'bg-orange-100'; text = 'text-orange-700'; label = 'Pending'; }
-        else if (status === 'FAILED') { bg = 'bg-red-100'; text = 'text-red-700'; label = 'Failed'; }
+        let label = status.charAt(0) + status.slice(1).toLowerCase();
+
+        if (['COMPLETED', 'PAID', 'SUCCESS'].includes(status)) { 
+          bg = 'bg-emerald-100'; 
+          text = 'text-emerald-700'; 
+        } else if (status === 'PENDING') { 
+          bg = 'bg-orange-100'; 
+          text = 'text-orange-700'; 
+        } else if (['FAILED', 'CANCELLED', 'REFUNDED'].includes(status)) { 
+          bg = 'bg-red-100'; 
+          text = 'text-red-700'; 
+        }
 
         return (
           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${bg} ${text}`}>
-            {label}
+            {label === 'Cancelled' ? 'Cancelled' : label}
           </span>
         );
       }
     },
     { key: 'order_status', label: 'Order Status',
       render: (_, row) => {
-        const status = (row.status || 'PENDING').toLowerCase();
-        let bg = 'bg-slate-50 border-slate-200', text = 'text-slate-600', label = 'Pending';
-        if (status === 'delivered') { bg = 'bg-emerald-50 border-emerald-200'; text = 'text-emerald-600'; label = 'Delivered'; }
-        else if (status === 'processing' || status === 'pending') { bg = 'bg-blue-50 border-blue-200'; text = 'text-blue-600'; label = 'Processing'; }
-        else if (status === 'shipped') { bg = 'bg-indigo-50 border-indigo-200'; text = 'text-indigo-600'; label = 'Shipped'; }
-        else if (status === 'cancelled') { bg = 'bg-red-50 border-red-200'; text = 'text-red-600'; label = 'Cancelled'; }
+        const status = (row.status || 'PENDING').toUpperCase();
+
+        if (editingRowId === row.id) {
+          return (
+            <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              <select
+                value={editStatusValue}
+                onChange={(e) => setEditStatusValue(e.target.value)}
+                className="text-xs font-medium border border-slate-300 rounded px-2 py-1 outline-none focus:border-indigo-400 bg-white min-w-[100px]"
+              >
+                {statuses.map((s) => (
+                  <option key={s} value={s}>
+                    {s.charAt(0) + s.slice(1).toLowerCase()}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => {
+                  if (editStatusValue !== status) {
+                    onUpdateStatus(row.id, editStatusValue);
+                  }
+                  setEditingRowId(null);
+                }}
+                disabled={editStatusValue === status}
+                className="text-emerald-600 hover:bg-emerald-50 p-1 rounded disabled:opacity-50"
+                title="Save"
+              >
+                <HiCheck className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setEditingRowId(null)}
+                className="text-slate-500 hover:bg-slate-100 p-1 rounded"
+                title="Cancel"
+              >
+                <HiXMark className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        }
+
+        let bg = 'bg-slate-50 border-slate-200', text = 'text-slate-600';
+        let label = status.charAt(0) + status.slice(1).toLowerCase();
+
+        if (['DELIVERED', 'COMPLETED', 'SUCCESS'].includes(status)) { 
+          bg = 'bg-emerald-50 border-emerald-200'; 
+          text = 'text-emerald-600'; 
+        } else if (['PROCESSING', 'CONFIRMED', 'SHIPPED'].includes(status)) { 
+          bg = 'bg-blue-50 border-blue-200'; 
+          text = 'text-blue-600'; 
+        } else if (status === 'PENDING') { 
+          bg = 'bg-orange-50 border-orange-200'; 
+          text = 'text-orange-600'; 
+        } else if (['CANCELLED', 'FAILED', 'REFUNDED'].includes(status)) { 
+          bg = 'bg-red-50 border-red-200'; 
+          text = 'text-red-600'; 
+        }
 
         return (
           <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${bg} ${text}`}>
-            {label}
+            {label === 'Cancelled' ? 'Cancelled' : label}
           </span>
         );
       }
@@ -153,8 +217,12 @@ export default function OrdersTable({ orders, onUpdateStatus, onCancel }) {
           </button>
           <button
             className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors"
-            title="Edit order"
-            onClick={(e) => e.stopPropagation()}
+            title="Edit order status"
+            onClick={(e) => {
+              e.stopPropagation();
+              setEditingRowId(row.id);
+              setEditStatusValue((row.status || 'PENDING').toUpperCase());
+            }}
           >
             <HiOutlinePencil className="w-3.5 h-3.5" />
           </button>
@@ -175,7 +243,11 @@ export default function OrdersTable({ orders, onUpdateStatus, onCancel }) {
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-      <Table columns={columns} data={orders || []} />
+      <Table 
+        columns={columns} 
+        data={orders || []} 
+        onRowClick={(row) => console.log('Clicked Order ID:', row.id)}
+      />
     </div>
   );
 }

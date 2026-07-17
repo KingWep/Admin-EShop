@@ -95,4 +95,15 @@ export const API_ENDPOINTS = {
     BY_TRANSACTION: '/api/v1/payments/transaction/',
     BY_ORDER: '/api/v1/payments/order/',
   },
+
+  TRANSACTION: {
+    UPDATE_STATUS: '/api/v1/payment-transactions/{id}/status',
+    CREATE: '/api/v1/payment-transactions',
+    GET_ALL: '/api/v1/payment-transactions/get/all',
+    GET_BY_ID: '/api/v1/payment-transactions/{id}',
+    GET_STATUS_HISTORY: '/api/v1/payment-transactions/{id}/status-history',
+    GET_BY_ORDER_ID: '/api/v1/payment-transactions/order/{orderId}',
+    GET_BY_TRANSACTION_NO: '/api/v1/payment-transactions/no/{transactionNo}',
+    GET_BY_CUSTOMER_ID: '/api/v1/payment-transactions/customer/{customerId}',
+  },
 };

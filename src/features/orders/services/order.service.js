@@ -17,41 +17,24 @@ const handleRequest = async (requestPromise) => {
 
 const orderService = {
   /**
-   * Get all orders with full filters (GET)
+   * Get all orders with full filters
    * 
-   * @param {Object} params - The filter parameters
-   * @param {number} [params.page] - Page number
-   * @param {number} [params.size] - Page size
-   * @param {string} [params.status] - Order status
-   * @param {string} [params.search] - Search term
-   * @param {string} [params.sortBy] - Field to sort by
-   * @param {string} [params.sortDir] - Sort direction (asc/desc)
-   * @param {string} [params.startDate] - Start date
-   * @param {string} [params.endDate] - End date
+   * @param {Object} params - The filter parameters (search, orderStatus, paymentStatus, paymentMethod, date, page, size)
    * @returns {Promise<any>} The paginated orders
    */
   getAll: async (params = {}) => {
-    const query = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        query.append(key, value);
-      }
-    });
-    // Build query string dynamically, only including params that are actually provided
-    const queryString = query.toString();
-    const url = queryString ? `${API_ENDPOINTS.ORDERS.GET_ALL}?${queryString}` : API_ENDPOINTS.ORDERS.GET_ALL;
-    return handleRequest(axiosClient.get(url));
+    // Pass as query params according to the new API contract
+    return handleRequest(axiosClient.get(API_ENDPOINTS.ORDERS.GET_ALL, { params }));
   },
 
   /**
-   * Get all orders using alternative POST endpoint
-   * // UNCONFIRMED: Backend needs to confirm if we should use GET_ALL or GET_ALL_ALT
+   * Get all orders using alternative endpoint
    * 
-   * @param {Object} payload - The filter parameters as body
+   * @param {Object} params - The filter parameters
    * @returns {Promise<any>} The paginated orders
    */
-  getAllAlt: async (payload = {}) => {
-    return handleRequest(axiosClient.post(API_ENDPOINTS.ORDERS.GET_ALL_ALT, payload));
+  getAllAlt: async (params = {}) => {
+    return handleRequest(axiosClient.post(API_ENDPOINTS.ORDERS.GET_ALL_ALT, params));
   },
 
   /**
@@ -131,7 +114,7 @@ const orderService = {
    */
   getUserHistory: async (userId, filters = {}) => {
     const payload = { userId };
-    
+
     // Only include filters that are set
     const allowedFilters = ['status', 'startDate', 'endDate', 'page', 'size'];
     allowedFilters.forEach(key => {
@@ -151,7 +134,7 @@ const orderService = {
    * @returns {Promise<any>} The updated order
    */
   updateStatus: async (id, status) => {
-    return handleRequest(axiosClient.post(API_ENDPOINTS.ORDERS.UPDATE_STATUS, { id, status }));
+    return handleRequest(axiosClient.post(API_ENDPOINTS.ORDERS.UPDATE_STATUS, null, { params: { id, status } }));
   },
 
   /**

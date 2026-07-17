@@ -14,23 +14,32 @@ export function useOrders(initialParams = {}) {
     setLoading(true);
     setError(null);
     try {
-      const data = await orderService.getAllAlt(params);
-      console.log("Order res", data);
-
-      if (data && Array.isArray(data.payload)) {
-        setOrders(data.payload);
-        setTotalPages(data.total_pages || 1);
-        setTotalElements(data.total_items || data.payload.length);
-      } else if (Array.isArray(data)) {
-        setOrders(data);
+      if (params.orderNumber) {
+        const data = await orderService.getByNumber(params.orderNumber);
+        console.log("Order by number res", data);
+        const orderData = data.payload || data.data || data;
+        setOrders(orderData ? [orderData] : []);
         setTotalPages(1);
-        setTotalElements(data.length);
-      } else if (data && data.data && Array.isArray(data.data)) {
-        setOrders(data.data);
-        setTotalPages(data.totalPages || data.meta?.totalPages || 1);
-        setTotalElements(data.totalElements || data.meta?.totalElements || data.data.length);
+        setTotalElements(orderData ? 1 : 0);
       } else {
-        setOrders([]);
+        const data = await orderService.getAllAlt(params);
+        console.log("Order res", data);
+
+        if (data && Array.isArray(data.payload)) {
+          setOrders(data.payload);
+          setTotalPages(data.total_pages || 1);
+          setTotalElements(data.total_items || data.payload.length);
+        } else if (Array.isArray(data)) {
+          setOrders(data);
+          setTotalPages(1);
+          setTotalElements(data.length);
+        } else if (data && data.data && Array.isArray(data.data)) {
+          setOrders(data.data);
+          setTotalPages(data.totalPages || data.meta?.totalPages || 1);
+          setTotalElements(data.totalElements || data.meta?.totalElements || data.data.length);
+        } else {
+          setOrders([]);
+        }
       }
     } catch (err) {
       console.error('Failed to fetch orders:', err);

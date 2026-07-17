@@ -1,12 +1,13 @@
-// src/pages/TransactionsPage.jsx
+// src/features/payments/pages/TransactionsPage.jsx
 import { PageHeader } from '@/components/ui';
 import TransactionsTable from '../components/TransactionsTable';
-import {  paymentDetails, paymentStats  } from '@/features/payments/services/payment.service';
+import { useTransactions } from '../hooks/useTransactions';
 import { HiOutlineArrowDownTray, HiOutlineChevronDown } from 'react-icons/hi2';
 import PageContainer from '@/components/layouts/PageContainer';
 
-
 export default function TransactionsPage() {
+  const { transactions, loading, error, refetch } = useTransactions({ page: 1, size: 100 });
+
   return (
     <PageContainer>
       {/* ── Page header ── */}
@@ -24,8 +25,9 @@ export default function TransactionsPage() {
 
       {/* ── Table + stats ── */}
       <TransactionsTable
-        transactions={paymentDetails}
-        stats={paymentStats}
+        transactions={transactions}
+        loading={loading}
+        error={error}
       />
     </PageContainer>
   );

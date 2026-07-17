@@ -23,6 +23,7 @@ export default function Table({
   emptyState,
   stickyHeader = false,
   className,
+  onRowClick,
 }) {
   const isEmpty = !loading && data.length === 0;
 
@@ -119,9 +120,11 @@ export default function Table({
               data.map((row, rowIdx) => (
                 <tr
                   key={row.id ?? rowIdx}
+                  onClick={() => onRowClick?.(row)}
                   className={cn(
                     'group transition-colors duration-150 hover:bg-indigo-50/50',
-                    rowIdx % 2 === 1 && 'bg-slate-50/40'
+                    rowIdx % 2 === 1 && 'bg-slate-50/40',
+                    onRowClick && 'cursor-pointer'
                   )}
                 >
                   {columns.map(col => (
