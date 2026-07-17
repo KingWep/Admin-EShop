@@ -201,21 +201,6 @@ export default function AddProductForm() {
                         value={variant.price}
                         onChange={(e) => updateVariant(variant.id, 'price', e.target.value)}
                       />
-                      {/* <Input
-                        label="Inventory Quantity *"
-                        type="number"
-                        min="0"
-                        placeholder="50"
-                        value={variant.inventory_quantity}
-                        onChange={(e) => updateVariant(variant.id, 'inventory_quantity', e.target.value)}
-                      />
-                      <Input
-                        label="Warehouse Location *"
-                        className="col-span-2"
-                        placeholder="Warehouse A"
-                        value={variant.warehouse_location}
-                        onChange={(e) => updateVariant(variant.id, 'warehouse_location', e.target.value)}
-                      /> */}
                     </div>
 
                     <div className="mt-5 space-y-3">

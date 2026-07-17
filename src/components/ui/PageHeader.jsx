@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom';
 import { cn } from '@/utils/cn';
 
-export default function PageHeader({ title, description, crumbs, stats = [], children }) {
+import { StatCardSkeleton } from '@/components/ui/Skeleton';
+
+export default function PageHeader({ title, description, crumbs, stats = [], loading, children }) {
   return (
     <div className="mb-6 space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -37,7 +39,15 @@ export default function PageHeader({ title, description, crumbs, stats = [], chi
         )}
       </div>
 
-      {stats && stats.length > 0 && (
+      {loading && stats && stats.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+          {Array.from({ length: stats.length }).map((_, idx) => (
+            <div key={idx} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+              <StatCardSkeleton />
+            </div>
+          ))}
+        </div>
+      ) : stats && stats.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
           {stats.map((stat, idx) => (
             <div key={idx} className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex items-start gap-4 transition-all hover:shadow-md">

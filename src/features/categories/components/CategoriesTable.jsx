@@ -2,7 +2,7 @@ import Table from '@/components/ui/Table';
 import { HiOutlinePencilSquare } from 'react-icons/hi2';
 import DeleteButton from '@/components/ui/DeleteButton';
 
-export default function CategoriesTable({ categories, onEdit, onDelete }) {
+export default function CategoriesTable({ categories, onEdit, onDelete, loading }) {
   const columns = [
     {
       key: 'id',
@@ -78,6 +78,6 @@ export default function CategoriesTable({ categories, onEdit, onDelete }) {
   ];
 
   return (
-    <Table columns={columns} data={categories} />
+    <Table columns={columns} data={categories} loading={loading} />
   );
 }

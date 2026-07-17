@@ -1,11 +1,12 @@
 // src/features/brands/pages/BrandsPage.jsx
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BrandsGrid from '../components/BrandsGrid';
-import BrandsFilter from '../components/BrandsFilter';
-import { Button, PageHeader } from '@/components/ui';
+import BrandStats from '../components/BrandStats';
+import BrandToolbar from '../components/BrandToolbar';
+import BrandTable from '../components/BrandTable';
+import Pagination from '@/components/ui/Pagination';
+import { PageHeader, Button, DataTableCard } from '@/components/ui';
 import { HiPlus } from 'react-icons/hi2';
-import { brandStats } from '@/features/reports/components/PageStats';
 import { brandService } from '@/features/brands/services/brand.service';
 import PageContainer from '@/components/layouts/PageContainer';
 
@@ -13,8 +14,8 @@ export default function BrandsPage() {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [page] = useState(1);
-  const [size] = useState(10);
+  const [page, setPage] = useState(1);
+  const [size, setSize] = useState(10);
 
   // Filter state
   const [search, setSearch] = useState('');
@@ -83,7 +84,11 @@ export default function BrandsPage() {
     }
 
     if (filters.category) {
-      result = result.filter(b => String(b.category_id) === String(filters.category));
+      result = result.filter(b => String(b.category_id) === String(filters.category) || b.category_name === filters.category);
+    }
+
+    if (filters.status) {
+      result = result.filter(b => b.status === filters.status);
     }
 
     return result;
@@ -104,41 +109,60 @@ export default function BrandsPage() {
         title="Brands"
         description="Manage product brands and partnerships."
         crumbs={[{ label: 'Dashboard', path: '/dashboard' }, { label: 'Brands' }]}
-        stats={brandStats}
       >
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm" onClick={() => navigate('/dashboard/brands/add')}>
+        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm flex items-center gap-2" onClick={() => navigate('/dashboard/brands/add')}>
           <HiPlus className="h-4 w-4" />
           Add Brand
         </Button>
       </PageHeader>
 
-      {/* Filter Bar */}
-      <BrandsFilter
-        search={search}
-        onSearch={setSearch}
-        filters={filters}
-        onFilter={handleFilter}
-        onReset={handleReset}
-        hasActive={hasActive}
-      />
+      <BrandStats brands={brands} loading={loading} />
 
-      {loading && (
-        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-          Loading brands…
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
-      <BrandsGrid
-        brands={filteredBrands}
-        onEdit={(brand) => navigate(`/dashboard/brands/edit/${brand.id}`)}
-        onDelete={handleDelete}
-      />
+      <DataTableCard
+        toolbar={
+          <BrandToolbar
+            search={search}
+            onSearch={setSearch}
+            filters={filters}
+            onFilter={handleFilter}
+          />
+        }
+        loading={loading}
+        error={error}
+        loadingMessage="Loading brands..."
+        footer={
+          <>
+            <div className="flex items-center gap-3 text-sm text-slate-500">
+              <span>Rows per page:</span>
+              <select 
+                value={size} 
+                onChange={(e) => setSize(Number(e.target.value))}
+                className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+            <div className="w-full sm:w-auto overflow-hidden rounded-lg border border-slate-100">
+              <Pagination
+                pageNumber={page}
+                totalPages={Math.max(1, Math.ceil(filteredBrands.length / size))}
+                pageSize={size}
+                totalResults={filteredBrands.length}
+                onPageChange={setPage}
+              />
+            </div>
+          </>
+        }
+      >
+        <BrandTable
+          brands={filteredBrands}
+          onEdit={(brand) => navigate(`/dashboard/brands/edit/${brand.id}`)}
+          onDelete={handleDelete}
+          loading={loading}
+        />
+      </DataTableCard>
     </PageContainer>
   );
 }

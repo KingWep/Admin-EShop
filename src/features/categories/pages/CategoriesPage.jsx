@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import CategoriesTable from '../components/CategoriesTable';
 import CategoriesFilter from '../components/CategoriesFilter';
-import { Button, PageHeader } from '@/components/ui';
+import { Button, PageHeader, DataTableCard } from '@/components/ui';
 import { categoryStats } from '@/features/reports/components/PageStats';
 import { HiPlus } from 'react-icons/hi2';
 import { categoryApi } from '@/features/categories/services/category.service';
@@ -86,30 +86,26 @@ export default function CategoriesPage() {
       </PageHeader>
 
       {/* Filter Bar */}
-      <CategoriesFilter
-        search={search}
-        onSearch={setSearch}
-        onReset={handleReset}
-        hasActive={hasActive}
-      />
-
-      {loading && (
-        <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-          Loading categories…
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
-      <CategoriesTable
-        categories={filteredCategories}
-        onEdit={(cat) => navigate(`/dashboard/categories/edit/${cat.id}`)}
-        onDelete={handleDelete}
-      />
+      <DataTableCard
+        toolbar={
+          <CategoriesFilter
+            search={search}
+            onSearch={setSearch}
+            onReset={handleReset}
+            hasActive={hasActive}
+          />
+        }
+        loading={loading}
+        error={error}
+        loadingMessage="Loading categories..."
+      >
+        <CategoriesTable
+          categories={filteredCategories}
+          onEdit={(cat) => navigate(`/dashboard/categories/edit/${cat.id}`)}
+          onDelete={handleDelete}
+          loading={loading}
+        />
+      </DataTableCard>
     </PageContainer>
   );
 }

@@ -2,7 +2,7 @@ import CustomersTable from '../components/CustomersTable';
 import {  customers  } from '@/features/dashboard/services/dashboard.service';
 import { HiOutlineMagnifyingGlass } from 'react-icons/hi2';
 import { useState } from 'react';
-import { PageHeader } from '@/components/ui';
+import { PageHeader, DataTableCard } from '@/components/ui';
 import {  customerStats  } from '@/features/reports/components/PageStats';
 import PageContainer from '@/components/layouts/PageContainer';
 
@@ -24,21 +24,24 @@ export default function CustomersPage() {
         stats={customerStats}
       />
 
-      {/* Search */}
-      <div className="card mb-4">
-        <div className="relative max-w-sm">
-          <HiOutlineMagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search customers..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-9 pr-3 text-sm placeholder-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-          />
-        </div>
-      </div>
-
-      <CustomersTable customers={filtered} />
+      <DataTableCard
+        toolbar={
+          <div className="flex flex-col gap-4 border-b border-slate-200 bg-white px-5 py-5 sm:px-6 md:flex-row md:items-center md:justify-between rounded-t-xl">
+            <div className="relative max-w-sm flex-1">
+              <HiOutlineMagnifyingGlass className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search customers..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm placeholder-slate-400 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+              />
+            </div>
+          </div>
+        }
+      >
+        <CustomersTable customers={filtered} />
+      </DataTableCard>
     </PageContainer>
   );
 }

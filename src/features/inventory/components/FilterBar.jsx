@@ -2,7 +2,7 @@ import { Search, ChevronDown, RotateCcw, Download, Upload, Filter } from 'lucide
 
 export default function FilterBar() {
   return (
-    <div className="flex flex-col lg:flex-row gap-4 mb-6">
+    <div className="flex flex-col lg:flex-row gap-4 border-b border-slate-200 bg-white px-5 py-5 sm:px-6 md:items-center justify-between rounded-t-xl">
       {/* Left side: Search & Dropdowns */}
       <div className="flex-grow flex flex-col md:flex-row gap-3">
         {/* Search */}

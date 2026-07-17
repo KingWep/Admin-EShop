@@ -10,7 +10,7 @@ import {
   HiOutlineEye,
 } from 'react-icons/hi2';
 
-export default function ProductsTable({ products, onDelete }) {
+export default function ProductsTable({ products, onDelete, loading }) {
   const navigate = useNavigate();
   const [sortKey, setSortKey] = useState('name');
   const [sortDir, setSortDir] = useState('asc');
@@ -132,14 +132,13 @@ export default function ProductsTable({ products, onDelete }) {
   ];
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white">
-      <Table
+    <Table
         columns={columns}
         data={sorted}
+        loading={loading}
         sortKey={sortKey}
         sortDir={sortDir}
         onSort={handleSort}
       />
-    </div>
   );
 }

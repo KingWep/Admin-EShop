@@ -3,6 +3,7 @@ import OrdersTable from '../components/OrdersTable';
 import { PageHeader } from '@/components/ui';
 import { orderStats } from '@/features/reports/components/PageStats';
 import OrderFilter from '../components/OrderFilter';
+import { DataTableCard } from '@/components/ui';
 import Pagination from '@/components/ui/Pagination';
 import { useOrders } from '../hooks/useOrders';
 import { HiOutlineCalendarDays, HiOutlineChevronDown, HiOutlineArrowDownTray } from 'react-icons/hi2';
@@ -161,6 +162,7 @@ export default function OrdersPage() {
         title="History Order Details"
         crumbs={[{ label: 'Dashboard', path: '/' }, { label: 'Orders' }, { label: 'History Order Details' }]}
         stats={mappedStats}
+        loading={loading}
       >
         <div className="flex flex-col sm:flex-row items-center gap-3">
           <button className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-lg shadow-sm hover:bg-slate-50">
@@ -176,29 +178,25 @@ export default function OrdersPage() {
         </div>
       </PageHeader>
 
-      <OrderFilter
-        search={filters.search}
-        onSearchChange={(search) => handleFilterChange({ search })}
-        orderStatus={filters.orderStatus}
-        onOrderStatusChange={(orderStatus) => handleFilterChange({ orderStatus })}
-        paymentMethod={filters.paymentMethod}
-        onPaymentMethodChange={(paymentMethod) => handleFilterChange({ paymentMethod })}
-        date={filters.date}
-        onDateChange={(date) => handleFilterChange({ date })}
-        onClearFilters={handleClearFilters}
-      />
-
-      {loading ? (
-        <div className="flex justify-center p-8 text-slate-500">Loading orders...</div>
-      ) : (
-        <>
-          <OrdersTable
-            orders={filteredOrders}
-            onUpdateStatus={(id, status) => updateOrderStatus(id, status, params)}
-            onCancel={(id, userId, reason) => cancelOrder(id, userId, reason, params)}
+      <DataTableCard
+        toolbar={
+          <OrderFilter
+            search={filters.search}
+            onSearchChange={(search) => handleFilterChange({ search })}
+            orderStatus={filters.orderStatus}
+            onOrderStatusChange={(orderStatus) => handleFilterChange({ orderStatus })}
+            paymentMethod={filters.paymentMethod}
+            onPaymentMethodChange={(paymentMethod) => handleFilterChange({ paymentMethod })}
+            date={filters.date}
+            onDateChange={(date) => handleFilterChange({ date })}
+            onClearFilters={handleClearFilters}
           />
-          {(totalPages > 1 || filteredOrders.length !== (allOrders || []).length || totalElements > 0) && (
-            <div className="mt-4">
+        }
+        loading={loading}
+        loadingMessage="Loading orders..."
+        footer={
+          (totalPages > 1 || filteredOrders.length !== (allOrders || []).length || totalElements > 0) && (
+            <div className="w-full sm:w-auto overflow-hidden rounded-lg border border-slate-100">
               <Pagination
                 pageNumber={params.page}
                 totalPages={filters.orderStatus !== 'ALL' || filters.paymentMethod !== 'all' || filters.date !== '' ? Math.max(1, Math.ceil(filteredOrders.length / pagination.size)) : totalPages}
@@ -207,9 +205,16 @@ export default function OrdersPage() {
                 onPageChange={handlePageChange}
               />
             </div>
-          )}
-        </>
-      )}
+          )
+        }
+      >
+        <OrdersTable
+          orders={filteredOrders}
+          onUpdateStatus={(id, status) => updateOrderStatus(id, status, params)}
+          onCancel={(id, userId, reason) => cancelOrder(id, userId, reason, params)}
+          loading={loading}
+        />
+      </DataTableCard>
     </PageContainer>
   );
 }

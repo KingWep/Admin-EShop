@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import PageContainer from '@/components/layouts/PageContainer';
+import { PageHeader, DataTableCard } from '@/components/ui';
 import StatCards from '../components/StatCards';
+import Pagination from '@/components/ui/Pagination';
 import FilterBar from '../components/FilterBar';
 import InventoryTable from '../components/InventoryTable';
 import EditStockModal from '../components/EditStockModal';
 import ViewStockDrawer from '../components/ViewStockDrawer';
 import inventoryService from '../services/inventory.service';
-import { PageHeader } from '@/components/ui';
+
 function deriveStatus(availableQty, lowStockThreshold) {
   if (availableQty <= 0) return 'Out of Stock';
   if (availableQty <= lowStockThreshold) return 'Low Stock';
@@ -14,11 +16,6 @@ function deriveStatus(availableQty, lowStockThreshold) {
 }
 
 
-/**
- * Safely parse an ISO timestamp string from the API.
- * The server returns timestamps without the trailing "Z" (e.g. "2026-07-13T18:04:46.690005").
- * We append "Z" so the browser treats them as UTC and converts to local time correctly.
- */
 function parseApiDate(isoString) {
   if (!isoString) return null;
   // Append Z only when there is no timezone info already
@@ -178,46 +175,36 @@ export default function InventoryPage() {
       />
 
       <div className="max-w-[1600px] mx-auto pb-10">
-        <StatCards summary={statSummary} />
+        <StatCards summary={statSummary} loading={loading} />
 
-        <FilterBar />
-
-        {loading && (
-          <div className="mb-4 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-            Loading inventory…
-          </div>
-        )}
-
-        {error && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center justify-between">
-            <span>{error}</span>
-            <button
-              onClick={() => void fetchInventory()}
-              className="ml-4 text-xs font-medium text-red-700 underline hover:no-underline"
-            >
-              Retry
-            </button>
-          </div>
-        )}
-
-        {!loading && !error && data.length === 0 && (
-          <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 bg-slate-50 py-16 text-center">
-            <p className="text-sm font-medium text-slate-500">No inventory records found.</p>
-          </div>
-        )}
-
-        {data.length > 0 && (
-          <InventoryTable
-            data={data}
-            onViewClick={handleViewClick}
-            onEditClick={handleEditClick}
-            page={page + 1}          /* Pagination is 1-based */
-            totalPages={totalPages}
-            pageSize={pageSize}
-            totalResults={totalElements}
-            onPageChange={handlePageChange}
-          />
-        )}
+        <DataTableCard
+          toolbar={<FilterBar />}
+          loading={loading}
+          error={error}
+          loadingMessage="Loading inventory..."
+          footer={
+            data.length > 0 && (
+              <div className="w-full sm:w-auto overflow-hidden rounded-lg border border-slate-100">
+                <Pagination
+                  pageNumber={page + 1}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  totalResults={totalElements}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            )
+          }
+        >
+          {!error && (
+            <InventoryTable
+              data={data}
+              onViewClick={handleViewClick}
+              onEditClick={handleEditClick}
+              loading={loading}
+            />
+          )}
+        </DataTableCard>
       </div>
 
       <EditStockModal

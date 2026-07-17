@@ -11,6 +11,11 @@ import {
   HiOutlineChevronRight,
   HiMiniArrowTrendingUp,
   HiMiniArrowTrendingDown,
+  HiOutlineCreditCard,
+  HiOutlineCheckCircle,
+  HiOutlineClock,
+  HiOutlineXCircle,
+  HiOutlineCurrencyDollar,
 } from 'react-icons/hi2';
 
 // ── Payment method label map ───────────────────────────────────────────────────
@@ -175,11 +180,11 @@ export default function TransactionsTable({ transactions = [], stats, loading = 
     <div className="space-y-5">
       {/* ── Summary Stats ── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatCard icon="💳" iconBg="bg-blue-500"    label="Total Transactions"      value={computedStats?.total?.count ?? 0}       growth={computedStats?.total?.growth} />
-        <StatCard icon="✅" iconBg="bg-emerald-500" label="Successful Transactions"  value={computedStats?.successful?.count ?? 0}  growth={computedStats?.successful?.growth} />
-        <StatCard icon="⏳" iconBg="bg-amber-500"   label="Pending Transactions"     value={computedStats?.pending?.count ?? 0}     growth={computedStats?.pending?.growth} />
-        <StatCard icon="✕"  iconBg="bg-red-500"     label="Failed Transactions"      value={computedStats?.failed?.count ?? 0}      growth={computedStats?.failed?.growth} />
-        <StatCard icon="$"  iconBg="bg-purple-500"  label="Total Amount"             value={computedStats?.totalAmount?.value ?? 0} growth={computedStats?.totalAmount?.growth} prefix="$" />
+        <StatCard icon={<HiOutlineCreditCard className="h-6 w-6" />} iconBg="bg-blue-500"    label="Total Transactions"      value={computedStats?.total?.count ?? 0}       growth={computedStats?.total?.growth} />
+        <StatCard icon={<HiOutlineCheckCircle className="h-6 w-6" />} iconBg="bg-emerald-500" label="Successful Transactions"  value={computedStats?.successful?.count ?? 0}  growth={computedStats?.successful?.growth} />
+        <StatCard icon={<HiOutlineClock className="h-6 w-6" />} iconBg="bg-amber-500"   label="Pending Transactions"     value={computedStats?.pending?.count ?? 0}     growth={computedStats?.pending?.growth} />
+        <StatCard icon={<HiOutlineXCircle className="h-6 w-6" />}  iconBg="bg-red-500"     label="Failed Transactions"      value={computedStats?.failed?.count ?? 0}      growth={computedStats?.failed?.growth} />
+        <StatCard icon={<HiOutlineCurrencyDollar className="h-6 w-6" />}  iconBg="bg-purple-500"  label="Total Amount"             value={computedStats?.totalAmount?.value ?? 0} growth={computedStats?.totalAmount?.growth} prefix="$" />
       </div>
 
       {/* ── Error Banner ── */}

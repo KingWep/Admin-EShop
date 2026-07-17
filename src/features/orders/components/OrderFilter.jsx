@@ -83,7 +83,7 @@ export default function OrderFilter({
   ].filter(Boolean).length;
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-white p-3 sm:flex-row sm:items-center flex-wrap">
+    <div className="flex flex-col gap-3 border-b border-slate-200 bg-white px-5 py-5 sm:px-6 sm:flex-row sm:items-center flex-wrap rounded-t-xl">
       {/* Search */}
       <div className="relative flex-1 min-w-[220px]">
         <HiOutlineMagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />

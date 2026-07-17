@@ -11,7 +11,9 @@ import { Package, AlertTriangle, XCircle, CheckCircle2, Layers } from 'lucide-re
  *     outOfStock: number   — count of "Out of Stock" records on current page
  *   }
  */
-export default function StatCards({ summary = {} }) {
+import { StatCardSkeleton } from '@/components/ui/Skeleton';
+
+export default function StatCards({ summary = {}, loading }) {
   const { total = 0, inStock = 0, lowStock = 0, outOfStock = 0 } = summary;
 
   const stats = [
@@ -58,19 +60,27 @@ export default function StatCards({ summary = {} }) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
-      {stats.map((stat, index) => (
-        <div key={index} className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex items-center gap-4">
-          <div className={`h-12 w-12 rounded-full flex items-center justify-center flex-shrink-0 ${stat.bgColor}`}>
-            <stat.icon className={`h-6 w-6 ${stat.color}`} />
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+      {loading ? (
+        Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
+            <StatCardSkeleton />
           </div>
-          <div>
-            <p className="text-sm font-medium text-slate-500 mb-1">{stat.title}</p>
-            <h3 className="text-2xl font-bold text-slate-900 leading-tight">{stat.value}</h3>
-            <p className="text-xs text-slate-400 mt-1">{stat.subtext}</p>
+        ))
+      ) : (
+        stats.map((stat, index) => (
+          <div key={index} className="bg-white rounded-xl shadow-sm border border-slate-100 p-5 flex items-center gap-4">
+            <div className={`h-12 w-12 rounded-full flex items-center justify-center flex-shrink-0 ${stat.bgColor}`}>
+              <stat.icon className={`h-6 w-6 ${stat.color}`} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-slate-500 mb-1">{stat.title}</p>
+              <h3 className="text-2xl font-bold text-slate-900 leading-tight">{stat.value}</h3>
+              <p className="text-xs text-slate-400 mt-1">{stat.subtext}</p>
+            </div>
           </div>
-        </div>
-      ))}
+        ))
+      )}
     </div>
   );
 }

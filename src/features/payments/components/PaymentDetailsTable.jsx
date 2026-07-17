@@ -11,6 +11,10 @@ import {
   HiOutlineChevronRight,
   HiOutlineEllipsisVertical,
   HiArrowUpTray,
+  HiOutlineCreditCard,
+  HiOutlineCheckCircle,
+  HiOutlineClock,
+  HiOutlineXCircle,
 } from 'react-icons/hi2';
 
 // ── Payment method badges ──────────────────────────────────────────────────────
@@ -171,7 +175,7 @@ export default function PaymentDetailsTable({ payments, stats }) {
       <div>
         <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
           <OverviewCard
-            icon="💳"
+            icon={<HiOutlineCreditCard className="h-6 w-6 text-blue-600" />}
             iconBg="bg-blue-50"
             iconRing="ring-blue-100"
             label={stats.total.label}
@@ -179,7 +183,7 @@ export default function PaymentDetailsTable({ payments, stats }) {
             growth={stats.total.growth}
           />
           <OverviewCard
-            icon="✓"
+            icon={<HiOutlineCheckCircle className="h-6 w-6 text-emerald-600" />}
             iconBg="bg-emerald-50"
             iconRing="ring-emerald-100"
             label={stats.successful.label}
@@ -187,7 +191,7 @@ export default function PaymentDetailsTable({ payments, stats }) {
             growth={stats.successful.growth}
           />
           <OverviewCard
-            icon="⏳"
+            icon={<HiOutlineClock className="h-6 w-6 text-amber-600" />}
             iconBg="bg-amber-50"
             iconRing="ring-amber-100"
             label={stats.pending.label}
@@ -195,7 +199,7 @@ export default function PaymentDetailsTable({ payments, stats }) {
             growth={stats.pending.growth}
           />
           <OverviewCard
-            icon="✕"
+            icon={<HiOutlineXCircle className="h-6 w-6 text-red-600" />}
             iconBg="bg-red-50"
             iconRing="ring-red-100"
             label={stats.failed.label}

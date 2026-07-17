@@ -13,7 +13,7 @@ const MastercardLogo = () => <span className="flex mr-2 items-center"><span clas
 const PaypalLogo = () => <span className="font-bold text-blue-500 italic mr-2 text-xs">PayPal</span>;
 const UpiLogo = () => <span className="font-bold text-slate-700 italic mr-2 text-xs">UPI</span>;
 
-export default function OrdersTable({ orders, onUpdateStatus, onCancel }) {
+export default function OrdersTable({ orders, onUpdateStatus, onCancel, loading }) {
   const navigate = useNavigate();
   const statuses = Object.values(OrderStatus);
   
@@ -234,7 +234,7 @@ export default function OrdersTable({ orders, onUpdateStatus, onCancel }) {
             className="flex items-center justify-center w-6 h-6 rounded-full bg-red-50 text-red-500 hover:bg-red-100 transition-colors"
             title="Cancel order"
           >
-            <MdCancel className="w-3.5 h-3.5"/>
+            <MdCancel className="w-3.5 h-3.5" />
           </button>
         </div>
       ),
@@ -242,12 +242,11 @@ export default function OrdersTable({ orders, onUpdateStatus, onCancel }) {
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-      <Table 
-        columns={columns} 
-        data={orders || []} 
-        onRowClick={(row) => console.log('Clicked Order ID:', row.id)}
-      />
-    </div>
+    <Table 
+      columns={columns} 
+      data={orders || []} 
+      loading={loading}
+      onRowClick={(row) => console.log('Clicked Order ID:', row.id)}
+    />
   );
 }

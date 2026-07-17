@@ -12,8 +12,8 @@ import Button from '@/components/ui/Button';
  */
 export default function CategoriesFilter({ search, onSearch, onReset, hasActive }) {
   return (
-    <div className="card mb-4">
-      <div className="flex flex-wrap items-end gap-3">
+    <div className="flex flex-col gap-4 border-b border-slate-200 bg-white px-5 py-5 sm:px-6 md:flex-row md:items-center md:justify-between rounded-t-xl">
+      <div className="flex flex-wrap items-end gap-3 flex-1">
 
         {/* Search */}
         <div className="relative flex-1 min-w-[200px]">

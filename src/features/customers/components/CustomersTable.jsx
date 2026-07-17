@@ -6,7 +6,7 @@ import { formatDate } from '@/utils/formatDate';
 import { CUSTOMER_STATUSES } from '@/constants/status';
 import { HiOutlineEye } from 'react-icons/hi2';
 
-export default function CustomersTable({ customers }) {
+export default function CustomersTable({ customers, loading }) {
   const columns = [
     {
       key: 'name', label: 'Customer', sortable: true,
@@ -49,5 +49,5 @@ export default function CustomersTable({ customers }) {
     },
   ];
 
-  return <Table columns={columns} data={customers} />;
+  return <Table columns={columns} data={customers} loading={loading} />;
 }
