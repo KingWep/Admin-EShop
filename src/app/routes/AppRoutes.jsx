@@ -6,8 +6,10 @@ import DashboardPage from '@/features/dashboard/pages/DashboardPage';
 import OrdersPage from '@/features/orders/pages/OrdersPage';
 import OrderDetailPage from '@/features/orders/pages/OrderDetailPage';
 import ReturnsPage from '@/features/returns/pages/ReturnsPage';
+import ReturnDetailsPage from '@/features/returns/pages/ReturnDetailsPage';
 import CancellationsPage from '@/features/cancellations/pages/CancellationsPage';
 import PaymentsPage from '@/features/payments/pages/PaymentsPage';
+import PaymentDetailPage from '@/features/payments/pages/PaymentDetailPage';
 import RefundsPage from '@/features/refunds/pages/RefundsPage';
 import ReportsPage from '@/features/reports/pages/ReportsPage';
 import TransactionsPage from '@/features/payments/pages/TransactionsPage';
@@ -46,10 +48,12 @@ export default function AppRoutes() {
         <Route path="orders" element={<OrdersPage />} />
         <Route path="orders/:id" element={<OrderDetailPage />} />
         <Route path="returns" element={<ReturnsPage />} />
+        <Route path="returns/:id" element={<ReturnDetailsPage />} />
         <Route path="cancellations" element={<CancellationsPage />} />
 
         {/* Payments group */}
         <Route path="payments" element={<PaymentsPage />} />
+        <Route path="payments/:id" element={<PaymentDetailPage />} />
         <Route path="refunds" element={<RefundsPage />} />
         <Route path="transactions" element={<TransactionsPage />} />{/* placeholder */}
 

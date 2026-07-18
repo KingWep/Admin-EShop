@@ -4,6 +4,23 @@ import { API_ENDPOINTS } from '../../../api/endpoints';
 
 export const paymentService = {
   /**
+   * Get all payments (paginated and filtered)
+   */
+  getAll: ({ page = 1, size = 10, criteria_type = 0, criteria_value = '' } = {}) =>
+    axiosClient.post(API_ENDPOINTS.PAYMENTS.GET_ALL, {
+      page,
+      size,
+      criteria_type,
+      criteria_value,
+    }),
+
+  /**
+   * Get payment by ID
+   */
+  getById: (id) =>
+    axiosClient.get(`${API_ENDPOINTS.PAYMENTS.BY_ID}${id}`),
+
+  /**
    * Get all payments for a user
    */
   getByUser: (userId) =>

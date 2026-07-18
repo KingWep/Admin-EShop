@@ -89,11 +89,14 @@ export const API_ENDPOINTS = {
   UPDATE_STATUS: '/api/v1/orders/status/',
   },
   PAYMENTS: {
+    USER_ID :'api/v1/payments/user/id',
     USER_HISTORY: '/api/v1/payments/user/history',
     USER_DETAIL: '/api/v1/payments/user/detail',
     USER_ALL: '/api/v1/payments/user/all',
     BY_TRANSACTION: '/api/v1/payments/transaction/',
     BY_ORDER: '/api/v1/payments/order/',
+    BY_ID: '/api/v1/payments/id/',
+    GET_ALL: '/api/v1/payments/get/all',
   },
 
   TRANSACTION: {
