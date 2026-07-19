@@ -13,7 +13,7 @@ export const brandService = {
    * Get all brands (paginated)
    */
   getAll: (page = 1, size = 10) =>
-    axiosClient.post(GET_ALL_URL, {
+    axiosClient.post(`${GET_ALL_URL}?sort=id,desc`, {
       criteria_type: 0,
       criteria_value: '',
       page,

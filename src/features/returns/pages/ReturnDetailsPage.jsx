@@ -5,68 +5,242 @@ import { PageHeader } from '@/components/ui';
 import Button from '@/components/ui/Button';
 import { HiOutlineCheckCircle, HiOutlineXCircle, HiCheck } from 'react-icons/hi2';
 import { cn } from '@/utils/cn';
+import Swal from 'sweetalert2';
+import { useReturnDetails } from '../hooks/useReturnDetails';
+import returnService from '../services/return.service';
 
 export default function ReturnDetailsPage() {
   const { id } = useParams();
   
-  // State: 'REQUESTED', 'APPROVED', 'RECEIVED', 'INSPECTING', 'COMPLETED'
-  const [status, setStatus] = useState('REQUESTED');
+  const { data, loading, error, refetch } = useReturnDetails(id);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  const handleApprove = () => setStatus('APPROVED');
-  const handleReceive = () => setStatus('RECEIVED');
-  const handleStartInspection = () => setStatus('INSPECTING');
-  const handlePassInspection = () => setStatus('COMPLETED');
+  const status = (data?.status || 'PENDING').toUpperCase();
+
+  // API handlers
+  const handleApprove = async () => {
+    if (actionLoading) return;
+    setActionLoading(true);
+    try {
+      await returnService.approve(id);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'success',
+        title: 'Return approved successfully',
+      });
+      await refetch();
+    } catch (err) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'error',
+        title: err?.response?.data?.message || err.message || 'Failed to approve return',
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (actionLoading) return;
+    const result = await Swal.fire({
+      title: 'Reject Return?',
+      text: "Are you sure you want to reject this return?",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Yes, reject it'
+    });
+    if (!result.isConfirmed) return;
+    
+    setActionLoading(true);
+    try {
+      await returnService.reject(id);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'success',
+        title: 'Return rejected successfully',
+      });
+      await refetch();
+    } catch (err) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'error',
+        title: err?.response?.data?.message || err.message || 'Failed to reject return',
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReceive = async () => {
+    if (actionLoading) return;
+    setActionLoading(true);
+    try {
+      await returnService.receive(id);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'success',
+        title: 'Return marked as received',
+      });
+      await refetch();
+    } catch (err) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'error',
+        title: err?.response?.data?.message || err.message || 'Failed to mark as received',
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleStartInspection = async () => {
+    if (actionLoading) return;
+    setActionLoading(true);
+    try {
+      await returnService.startInspection(id);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'success',
+        title: 'Inspection started',
+      });
+      await refetch();
+    } catch (err) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'error',
+        title: err?.response?.data?.message || err.message || 'Failed to start inspection',
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handlePassInspection = async () => {
+    if (actionLoading) return;
+    setActionLoading(true);
+    try {
+      await returnService.completeInspection(id);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'success',
+        title: 'Inspection passed',
+      });
+      await refetch();
+    } catch (err) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'error',
+        title: err?.response?.data?.message || err.message || 'Failed to complete inspection',
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
   
   // Define Steps
   const stepIds = ['REQUESTED', 'APPROVED', 'RECEIVED', 'INSPECTING', 'COMPLETED'];
-  const currentIndex = stepIds.indexOf(status);
-
-  // Dynamic values based on status
-  const isRequested = status === 'REQUESTED';
+  
+  const isRequested = status === 'REQUESTED' || status === 'PENDING';
   const isApproved = status === 'APPROVED';
-  const isReceived = status === 'RECEIVED';
-  const isInspecting = status === 'INSPECTING';
+  const isReceived = status === 'RECEIVED' || status === 'PENDING_INSPECTION';
+  const isInspecting = status === 'INSPECTING' || status === 'IN_PROGRESS';
   const isCompleted = status === 'COMPLETED';
+  const isRejected = status === 'REJECTED';
+
+  let currentStepStatus = 'REQUESTED';
+  if (isApproved) currentStepStatus = 'APPROVED';
+  if (isReceived) currentStepStatus = 'RECEIVED';
+  if (isInspecting) currentStepStatus = 'INSPECTING';
+  if (isCompleted) currentStepStatus = 'COMPLETED';
+
+  const currentIndex = isRejected ? -1 : stepIds.indexOf(currentStepStatus);
+
+  const displayStatus = (data?.status || 'Unknown')
+    .toLowerCase()
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, l => l.toUpperCase());
+
+  let pillClass = "bg-slate-100 text-slate-700";
+  if (isRequested) pillClass = "bg-amber-100 text-amber-700";
+  if (isApproved || isReceived || isInspecting) pillClass = "bg-blue-100 text-blue-700";
+  if (isCompleted) pillClass = "bg-emerald-100 text-emerald-700";
+  if (isRejected) pillClass = "bg-red-100 text-red-700";
 
   let currentStatusPill = (
-    <span className="bg-amber-100 text-amber-700 text-[12px] font-bold px-2.5 py-0.5 rounded-full">Requested</span>
+    <span className={`${pillClass} text-[12px] font-bold px-2.5 py-0.5 rounded-full`}>
+      {displayStatus}
+    </span>
   );
-  if (isApproved) currentStatusPill = <span className="bg-blue-100 text-blue-700 text-[12px] font-bold px-2.5 py-0.5 rounded-full">Approved</span>;
-  if (isReceived) currentStatusPill = <span className="bg-blue-100 text-blue-700 text-[12px] font-bold px-2.5 py-0.5 rounded-full">Received</span>;
-  if (isInspecting) currentStatusPill = <span className="bg-blue-100 text-blue-700 text-[12px] font-bold px-2.5 py-0.5 rounded-full">Inspecting</span>;
-  if (isCompleted) currentStatusPill = <span className="bg-emerald-100 text-emerald-700 text-[12px] font-bold px-2.5 py-0.5 rounded-full">Completed</span>;
 
   let refundStatusPill = <span className="font-semibold text-slate-900 text-[13px]">Not created yet</span>;
   if (isCompleted) refundStatusPill = <span className="bg-amber-100 text-amber-700 text-[12px] font-bold px-2.5 py-0.5 rounded-full">Pending</span>;
 
+  const customerName = data?.customer_name || data?.requested_by || 'Unknown';
+  const customerEmail = data?.customer_email || 'No email provided';
+
   const timeline = [
-    { status: 'Return Requested', date: 'Jun 12, 2026, 10:05 AM', author: 'Customer', color: 'yellow' }
+    { status: 'Return Requested', date: data?.requested_at ? new Date(data.requested_at).toLocaleDateString() : '---', author: customerName, color: 'yellow' }
   ];
-  if (currentIndex >= 1) timeline.unshift({ status: 'Return Approved', date: 'Jun 12, 2026, 2:45 PM', author: 'John Admin', color: 'green' });
-  if (currentIndex >= 2) timeline.unshift({ status: 'Item Received', date: 'Jun 14, 2026, 9:12 AM', author: 'Warehouse Scan', color: 'blue' });
-  if (currentIndex >= 3) timeline.unshift({ status: 'Inspection Started', date: 'Jun 14, 2026, 1:00 PM', author: 'Warehouse Staff', color: 'blue' });
+  if (currentIndex >= 1) timeline.unshift({ status: 'Return Approved', date: data?.approved_at ? new Date(data.approved_at).toLocaleDateString() : '---', author: data?.approved_by || 'Admin', color: 'green' });
+  if (currentIndex >= 2) timeline.unshift({ status: 'Item Received', date: '---', author: 'Warehouse Scan', color: 'blue' });
+  if (currentIndex >= 3) timeline.unshift({ status: 'Inspection Started', date: '---', author: 'Warehouse Staff', color: 'blue' });
   if (currentIndex >= 4) {
-    timeline.shift(); // Remove inspection started
+    timeline.shift(); 
     timeline.unshift(
-      { status: 'Refund Created (Pending)', date: 'Jun 14, 2026, 3:30 PM', author: 'Automatic', color: 'green' },
-      { status: 'Inventory Increased +1', date: 'Jun 14, 2026, 3:30 PM', author: 'Automatic', color: 'green' },
-      { status: 'Return Completed', date: 'Jun 14, 2026, 3:30 PM', author: 'Inspection Passed', color: 'green' },
-      { status: 'Item Received', date: 'Jun 14, 2026, 9:12 AM', author: 'Warehouse Scan', color: 'blue' }
+      { status: 'Refund/Replacement Processed', date: data?.completed_at ? new Date(data.completed_at).toLocaleDateString() : '---', author: 'Automatic', color: 'green' },
+      { status: 'Inventory Adjusted', date: '---', author: 'Automatic', color: 'green' },
+      { status: 'Return Completed', date: data?.completed_at ? new Date(data.completed_at).toLocaleDateString() : '---', author: 'Inspection Passed', color: 'green' },
+      { status: 'Item Received', date: '---', author: 'Warehouse Scan', color: 'blue' }
     );
+  }
+  if (isRejected) {
+    timeline.unshift({ status: 'Return Rejected', date: data?.rejected_at ? new Date(data.rejected_at).toLocaleDateString() : '---', author: data?.rejected_by || 'Admin', color: 'red' });
   }
 
   const Stepper = () => {
     return (
       <div className="w-full bg-white px-8 py-7 rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.02)] mb-6">
         <div className="flex items-center justify-between relative px-4">
-          {/* Background Line */}
           <div className="absolute top-3 left-4 right-4 h-[2px] bg-slate-100 z-0"></div>
           
-          {/* Progress Line */}
-          <div 
-            className="absolute top-3 left-4 h-[2px] bg-green-500 z-0 transition-all duration-500"
-            style={{ width: `calc(${(currentIndex / (stepIds.length - 1)) * 100}% - ${currentIndex === 0 ? 0 : (currentIndex === stepIds.length - 1 ? 2 : 1)}rem)` }}
-          ></div>
+          {currentIndex >= 0 && (
+            <div 
+              className="absolute top-3 left-4 h-[2px] bg-green-500 z-0 transition-all duration-500"
+              style={{ width: `calc(${(currentIndex / (stepIds.length - 1)) * 100}% - ${currentIndex === 0 ? 0 : (currentIndex === stepIds.length - 1 ? 2 : 1)}rem)` }}
+            ></div>
+          )}
 
           {stepIds.map((step, idx) => {
             const isCompletedStep = idx <= currentIndex && (idx < currentIndex || isCompleted);
@@ -95,33 +269,30 @@ export default function ReturnDetailsPage() {
                   )}>
                     {step}
                   </span>
-                  <div className="h-4 mt-1">
-                    {idx === 0 && <span className="text-[10.5px] text-slate-400">Jun 12, 10:05 AM</span>}
-                    {idx === 1 && isCompletedStep && <span className="text-[10.5px] text-slate-400">Jun 12, 2:45 PM</span>}
-                    {idx === 1 && isCurrentStep && <span className="text-[10.5px] text-slate-400">Jun 12, 2:45 PM</span>}
-                    {idx === 2 && (idx <= currentIndex && !isRequested && !isApproved) && <span className="text-[10.5px] text-slate-400">Jun 14, 9:12 AM</span>}
-                    {idx === 2 && isCurrentStep && <span className="text-[10.5px] text-slate-400">Awaiting item</span>}
-                    {idx === 3 && (idx === currentIndex && isInspecting) && <span className="text-[10.5px] text-slate-400">In progress</span>}
-                    {idx === 3 && (isCompleted) && <span className="text-[10.5px] text-slate-400">Passed</span>}
-                    {idx === 3 && isPendingStep && !isCompleted && !isInspecting && <span className="text-[10.5px] text-slate-200">—</span>}
-                    {idx === 4 && isCompletedStep && <span className="text-[10.5px] text-slate-400">Jun 14, 3:30 PM</span>}
-                    {idx === 4 && !isCompletedStep && <span className="text-[10.5px] text-slate-200">—</span>}
-                  </div>
                 </div>
               </div>
             );
           })}
         </div>
-        
-        {/* Helper text shown on Inspecting step */}
-        {isInspecting && (
-          <div className="flex justify-end mt-4 text-[10.5px] text-slate-400 mr-2">
-            Passed &rarr; <span className="text-green-600 font-bold mx-1">COMPLETED</span> + Refund created &nbsp;&nbsp;&nbsp; Failed &rarr; <span className="text-red-600 font-bold ml-1">REJECTED</span>
-          </div>
-        )}
       </div>
     );
   };
+
+  if (loading) {
+    return (
+      <PageContainer>
+        <div className="flex justify-center items-center h-64 text-slate-500">Loading return details...</div>
+      </PageContainer>
+    );
+  }
+
+  if (error) {
+    return (
+      <PageContainer>
+        <div className="flex justify-center items-center h-64 text-red-500">{error}</div>
+      </PageContainer>
+    );
+  }
 
   return (
     <PageContainer>
@@ -130,7 +301,7 @@ export default function ReturnDetailsPage() {
         crumbs={[
           { label: 'Dashboard', path: '/' },
           { label: 'Returns', path: '/dashboard/returns' },
-          { label: 'Return Details' }
+          { label: data?.return_id || 'Return Details' }
         ]}
       />
 
@@ -140,18 +311,19 @@ export default function ReturnDetailsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex flex-col justify-center">
           <div className="flex items-center gap-3 mb-3">
-            <h3 className="text-[14px] font-semibold text-slate-500">Refund ID: RET-001</h3>
+            <h3 className="text-[14px] font-semibold text-slate-500">Return ID: {data?.return_id || id}</h3>
             {currentStatusPill}
           </div>
           <div className="text-3xl font-bold text-slate-900 mb-1.5 tracking-tight">
-            $1,349.98
+            ${data?.amount?.toFixed(2) || '0.00'}
           </div>
           <p className="text-[13px] text-slate-500 font-medium">
             {isRequested ? 'Awaiting approval decision' : 
              isApproved ? 'Waiting for customer to ship the item back' :
              isReceived ? 'Refund not yet created — pending inspection' :
              isInspecting ? 'Inspector reviewing item condition' :
-             'Refunded to Credit Card ****1234'}
+             isCompleted ? 'Refund/Replacement process initiated' :
+             'Return was rejected'}
           </p>
         </div>
 
@@ -159,22 +331,22 @@ export default function ReturnDetailsPage() {
           <h3 className="text-[14.5px] font-semibold text-slate-900 mb-4">Customer Details</h3>
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-semibold text-sm">
-              EC
+              {customerName.charAt(0).toUpperCase()}
             </div>
             <div>
-              <div className="font-semibold text-slate-900 text-[13.5px]">Emily Chen</div>
-              <div className="text-[13px] text-slate-500">emily.chen@email.com</div>
+              <div className="font-semibold text-slate-900 text-[13.5px]">{customerName}</div>
+              <div className="text-[13px] text-slate-500">{customerEmail}</div>
             </div>
           </div>
           <Link to="#" className="text-[13px] font-medium text-blue-600 hover:text-blue-700">View Customer Profile ↗</Link>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.02)] flex flex-col justify-center">
-          <h3 className="text-[14.5px] font-semibold text-slate-900 mb-4">Associated Order</h3>
+          <h3 className="text-[14.5px] font-semibold text-slate-900 mb-4">Associated Order & Product</h3>
           <div className="text-[13.5px] text-slate-800 space-y-2.5 font-medium">
-            <div className="flex justify-between"><span className="text-slate-500 font-normal">Order ID:</span> #ORD-1001</div>
-            <div className="flex justify-between"><span className="text-slate-500 font-normal">Order Date:</span> Jun 10, 2026</div>
-            <div className="flex justify-between"><span className="text-slate-500 font-normal">Order Total:</span> $1,349.98</div>
+            <div className="flex justify-between"><span className="text-slate-500 font-normal">Order ID:</span> {data?.order_no || 'N/A'}</div>
+            <div className="flex justify-between"><span className="text-slate-500 font-normal">Product:</span> <span className="text-right max-w-[120px] truncate" title={data?.product_name}>{data?.product_name || 'N/A'}</span></div>
+            <div className="flex justify-between"><span className="text-slate-500 font-normal">Return Type:</span> {data?.return_type || 'Refund'}</div>
           </div>
         </div>
       </div>
@@ -191,7 +363,7 @@ export default function ReturnDetailsPage() {
             <div className="p-5 space-y-4 text-[13.5px]">
               <div className="flex justify-between items-center">
                 <span className="text-slate-500">Return Reason</span>
-                <span className="font-medium text-slate-900">Defective Product</span>
+                <span className="font-medium text-slate-900 text-right max-w-[150px] truncate">{data?.reason || 'N/A'}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-500">Current Status</span>
@@ -203,27 +375,7 @@ export default function ReturnDetailsPage() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-500">Return Type</span>
-                <span className="font-medium text-slate-900">Full Refund</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500">Payment Method</span>
-                <span className="font-medium text-slate-900">Visa ending in 1234</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.02)] overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100">
-              <h3 className="text-[14.5px] font-semibold text-slate-900">Payment Details</h3>
-            </div>
-            <div className="p-5 space-y-4 text-[13.5px]">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500">Payment Transaction ID</span>
-                <span className="font-medium text-slate-900">trn_A182C3D4E5</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500">Refund Transaction ID</span>
-                <span className="font-medium text-slate-900">{isCompleted ? 'rf_5G6H7I8J9K' : '—'}</span>
+                <span className="font-medium text-slate-900">{data?.return_type || 'N/A'}</span>
               </div>
             </div>
           </div>
@@ -234,11 +386,11 @@ export default function ReturnDetailsPage() {
             {isRequested && (
               <>
                 <div className="flex gap-3 mb-3">
-                  <Button onClick={handleApprove} className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg">
-                    Approve Return
+                  <Button disabled={actionLoading} onClick={handleApprove} className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg">
+                    {actionLoading ? 'Processing...' : 'Approve Return'}
                   </Button>
-                  <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg">
-                    Reject Return
+                  <Button disabled={actionLoading} onClick={handleReject} className="flex-1 bg-red-600 hover:bg-red-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg">
+                    {actionLoading ? 'Processing...' : 'Reject Return'}
                   </Button>
                 </div>
                 <p className="text-[12.5px] text-slate-500">Decide whether this return qualifies before the customer ships anything back.</p>
@@ -247,15 +399,8 @@ export default function ReturnDetailsPage() {
 
             {isApproved && (
               <>
-                <div className="bg-green-50 border border-green-100 rounded-lg p-4 mb-4 flex gap-3">
-                  <div className="text-green-600 mt-0.5"><HiCheck className="w-5 h-5 bg-green-600 text-white rounded-full p-0.5" /></div>
-                  <div>
-                    <h4 className="text-[13.5px] font-bold text-green-900 mb-1">Approved by John Admin</h4>
-                    <p className="text-[12px] text-green-800/80">Jun 12, 2026 • 2:45 PM. Return label sent to customer.</p>
-                  </div>
-                </div>
-                <Button onClick={handleReceive} className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg mb-2">
-                  Mark as Received
+                <Button disabled={actionLoading} onClick={handleReceive} className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg mb-2">
+                  {actionLoading ? 'Processing...' : 'Mark as Received'}
                 </Button>
                 <p className="text-[12.5px] text-slate-500">Log this once the item physically arrives at the warehouse.</p>
               </>
@@ -263,15 +408,8 @@ export default function ReturnDetailsPage() {
 
             {isReceived && (
               <>
-                <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4 flex gap-3">
-                  <div className="text-blue-600 mt-0.5"><HiCheck className="w-5 h-5 bg-blue-600 text-white rounded-full p-0.5" /></div>
-                  <div>
-                    <h4 className="text-[13.5px] font-bold text-blue-900 mb-1">Item received in warehouse</h4>
-                    <p className="text-[12px] text-blue-800/80">Logged Jun 14, 2026 • 9:12 AM. Start inspection to move this return forward.</p>
-                  </div>
-                </div>
-                <Button onClick={handleStartInspection} className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg mb-2">
-                  Start Inspection
+                <Button disabled={actionLoading} onClick={handleStartInspection} className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg mb-2">
+                  {actionLoading ? 'Processing...' : 'Start Inspection'}
                 </Button>
                 <p className="text-[12.5px] text-slate-500">Next step: mark inspection as <span className="font-semibold text-slate-800">Passed</span> or <span className="font-semibold text-slate-800">Failed</span>.</p>
               </>
@@ -279,19 +417,12 @@ export default function ReturnDetailsPage() {
 
             {isInspecting && (
               <>
-                <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4 flex gap-3">
-                  <div className="text-blue-600 mt-0.5"><HiCheck className="w-5 h-5 bg-blue-600 text-white rounded-full p-0.5" /></div>
-                  <div>
-                    <h4 className="text-[13.5px] font-bold text-blue-900 mb-1">Inspection in progress</h4>
-                    <p className="text-[12px] text-blue-800/80">Started Jun 14, 2026 • 1:00 PM (by Warehouse Staff). Record the result below.</p>
-                  </div>
-                </div>
                 <div className="flex gap-3 mb-3">
-                  <Button onClick={handlePassInspection} className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg">
-                    Mark Passed
+                  <Button disabled={actionLoading} onClick={handlePassInspection} className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg">
+                    {actionLoading ? 'Processing...' : 'Mark Passed'}
                   </Button>
-                  <Button className="flex-1 bg-red-600 hover:bg-red-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg">
-                    Mark Failed
+                  <Button disabled={actionLoading} onClick={handleReject} className="flex-1 bg-red-600 hover:bg-red-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg">
+                    {actionLoading ? 'Processing...' : 'Mark Failed'}
                   </Button>
                 </div>
                 <p className="text-[12.5px] text-slate-500">This decision determines whether a refund is created or the return is rejected.</p>
@@ -304,11 +435,20 @@ export default function ReturnDetailsPage() {
                   <div className="text-green-600 mt-0.5"><HiCheck className="w-5 h-5 bg-green-600 text-white rounded-full p-0.5" /></div>
                   <div>
                     <h4 className="text-[13.5px] font-bold text-green-900 mb-1">Inspection passed — return completed</h4>
-                    <p className="text-[12px] text-green-800/80">Jun 14, 2026 • 3:30 PM. Inventory increased by 1 unit and a refund (PENDING) was created automatically.</p>
+                    <p className="text-[12px] text-green-800/80">Refund and inventory processes are complete or pending external settlement.</p>
                   </div>
                 </div>
-                <div className="border-t border-green-100 pt-3 mt-3">
-                  <p className="text-[12px] text-green-800/70">No further action needed here — refund now progresses through the payment provider.</p>
+              </div>
+            )}
+            
+            {isRejected && (
+              <div className="bg-red-50 border border-red-100 rounded-lg p-4">
+                <div className="flex gap-3 mb-2">
+                  <div className="text-red-600 mt-0.5"><HiOutlineXCircle className="w-5 h-5 text-red-600" /></div>
+                  <div>
+                    <h4 className="text-[13.5px] font-bold text-red-900 mb-1">Return Rejected</h4>
+                    <p className="text-[12px] text-red-800/80">The return request was rejected.</p>
+                  </div>
                 </div>
               </div>
             )}
@@ -326,8 +466,6 @@ export default function ReturnDetailsPage() {
                 <thead className="bg-white border-b border-slate-100 text-[12px] text-slate-500 font-semibold">
                   <tr>
                     <th className="px-5 py-3 font-semibold">Item</th>
-                    <th className="px-5 py-3 text-center font-semibold">Qty</th>
-                    <th className="px-5 py-3 text-right font-semibold">Unit Price</th>
                     <th className="px-5 py-3 text-right font-semibold">Refund Amount</th>
                   </tr>
                 </thead>
@@ -335,16 +473,13 @@ export default function ReturnDetailsPage() {
                   <tr>
                     <td className="px-5 py-4">
                       <div className="flex items-center gap-3">
-                        <img src="https://placehold.co/40x40/f3f4f6/a1a1aa?text=Lamp" alt="Lamp" className="w-10 h-10 rounded-md border border-slate-200 object-cover" />
+                        <div className="w-10 h-10 rounded-md bg-slate-100 flex items-center justify-center text-slate-400">P</div>
                         <div>
-                          <div className="font-semibold text-[13.5px] text-slate-900">Artisanal Brass & Oak Desk Lamp</div>
-                          <div className="text-[12px] text-slate-500 font-normal">SKU: lamp-ch-01</div>
+                          <div className="font-semibold text-[13.5px] text-slate-900">{data?.product_name || 'Product Name'}</div>
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-center text-[13.5px]">1</td>
-                    <td className="px-5 py-4 text-right text-[13.5px]">$1,349.98</td>
-                    <td className="px-5 py-4 text-right text-[13.5px] text-slate-900 font-semibold">$1,349.98</td>
+                    <td className="px-5 py-4 text-right text-[13.5px] text-slate-900 font-semibold">${data?.amount?.toFixed(2) || '0.00'}</td>
                   </tr>
                 </tbody>
               </table>
@@ -354,25 +489,17 @@ export default function ReturnDetailsPage() {
               <div className="w-72 space-y-2.5 text-[13.5px] font-medium">
                 <div className="flex justify-between">
                   <span className="text-slate-500">Subtotal</span>
-                  <span className="text-slate-900">$1,349.98</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Shipping</span>
-                  <span className="text-slate-900">$0.00</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Tax</span>
-                  <span className="text-slate-900">$0.00</span>
+                  <span className="text-slate-900">${data?.amount?.toFixed(2) || '0.00'}</span>
                 </div>
                 <div className="flex justify-between pb-3">
-                  <span className="text-slate-500">Discount</span>
+                  <span className="text-slate-500">Shipping / Fees</span>
                   <span className="text-slate-900">$0.00</span>
                 </div>
                 <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                   <span className="font-bold text-slate-900 text-[14.5px]">
                     {isCompleted ? 'Total Refunded' : isInspecting ? 'Total (pending result)' : 'Total (if completed)'}
                   </span>
-                  <span className="font-bold text-slate-900 text-[14.5px]">$1,349.98</span>
+                  <span className="font-bold text-slate-900 text-[14.5px]">${data?.amount?.toFixed(2) || '0.00'}</span>
                 </div>
               </div>
             </div>
@@ -406,7 +533,7 @@ export default function ReturnDetailsPage() {
                     </div>
                     <div className="pb-6 pt-0.5">
                       <div className="text-[13.5px] font-semibold text-slate-900 mb-0.5">{event.status}</div>
-                      <div className="text-[12.5px] text-slate-500">{event.date} (by {event.author})</div>
+                      <div className="text-[12.5px] text-slate-500">by {event.author}</div>
                     </div>
                   </div>
                 ))}

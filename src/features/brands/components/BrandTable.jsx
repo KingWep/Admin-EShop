@@ -4,7 +4,7 @@ import Badge from '@/components/ui/Badge';
 import DeleteButton from '@/components/ui/DeleteButton';
 import Table from '@/components/ui/Table';
 
-export default function BrandTable({ brands, onEdit, onDelete, loading }) {
+export default function BrandTable({ brands, onView, onEdit, onDelete, loading }) {
   const getStatusBadgeVariant = (status) => {
     switch(status?.toLowerCase()) {
       case 'active': return 'success'; // Green
@@ -43,11 +43,11 @@ export default function BrandTable({ brands, onEdit, onDelete, loading }) {
       )
     },
     { 
-      key: 'total_products', 
-      label: 'Total Products',
+      key: 'description', 
+      label: 'Description',
       render: (_, brand) => (
-        <span className="font-medium text-slate-700">
-          {brand.total_products || Math.floor(Math.random() * 50) + 1}
+        <span className="text-sm text-slate-500 line-clamp-2 max-w-xs" title={brand.description}>
+          {brand.description || 'No description'}
         </span>
       )
     },
@@ -65,7 +65,7 @@ export default function BrandTable({ brands, onEdit, onDelete, loading }) {
       label: 'Created At',
       render: (_, brand) => (
         <span className="text-slate-500">
-          {brand.created_at ? new Date(brand.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '12 Oct 2026'}
+          {brand.created_at ? new Date(brand.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
         </span>
       )
     },
@@ -75,7 +75,10 @@ export default function BrandTable({ brands, onEdit, onDelete, loading }) {
       align: 'right',
       render: (_, brand) => (
         <div className="flex items-center justify-end gap-2">
-          <button className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors">
+          <button 
+            onClick={() => onView?.(brand)}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors"
+          >
             <HiOutlineEye className="h-4 w-4" />
           </button>
           <button 

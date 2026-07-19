@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '@/features/auth/services/auth.service';
+import Swal from 'sweetalert2';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -28,12 +29,36 @@ export default function LoginPage() {
       const token = res.access_token;
       if (!token) {
         console.log("Invalid response from server")
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          showConfirmButton: false,
+          timer: 3000,
+          icon: 'error',
+          title: 'Invalid email or password',
+        });
         return;
       }
       localStorage.setItem("accessToken", token);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'success',
+        title: 'Logged in successfully',
+      });
       navigate("/dashboard");
     } catch (err) {
       console.log(err);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'error',
+        title: err?.response?.data?.message || err?.message || 'Failed to login',
+      });
     }
   };
 

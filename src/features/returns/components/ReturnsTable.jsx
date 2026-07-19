@@ -15,19 +15,21 @@ const TYPE_COLORS = {
 
 export default function ReturnsTable({ returns: items, onView }) {
   const columns = [
-    { key: 'id', label: 'Return ID',
+    { key: 'return_id', label: 'Return ID',
       render: val => <span className="font-semibold text-slate-700 font-mono text-sm">{val}</span> },
-    { key: 'orderId', label: 'Order',
-      render: val => <span className="font-semibold text-indigo-600">{val}</span> },
-    { key: 'customer', label: 'Customer' },
-    { key: 'product', label: 'Product',
-      render: val => <span className="font-medium text-slate-700">{val}</span> },
-    { key: 'type', label: 'Type',
+    { key: 'order_no', label: 'Order',
+      render: val => <span className="font-semibold text-indigo-600">{val || '-'}</span> },
+    { key: 'customer_name', label: 'Customer',
+      render: val => <span>{val || '-'}</span> },
+    { key: 'product_name', label: 'Product',
+      render: val => <span className="font-medium text-slate-700">{val || '-'}</span> },
+    { key: 'return_type', label: 'Type',
       render: val => {
-        const c = TYPE_COLORS[val] || TYPE_COLORS.return;
+        const typeKey = (val || 'return').toLowerCase();
+        const c = TYPE_COLORS[typeKey] || TYPE_COLORS.return;
         return (
           <span className={cn('rounded-md px-2 py-0.5 text-xs font-semibold capitalize', c.bg, c.text)}>
-            {val}
+            {typeKey}
           </span>
         );
       },
@@ -36,15 +38,24 @@ export default function ReturnsTable({ returns: items, onView }) {
       render: val => <span className="text-sm text-slate-500 max-w-[180px] truncate block">{val}</span> },
     { key: 'status', label: 'Status',
       render: val => {
-        const s = RETURN_STATUSES[val] || RETURN_STATUSES.requested;
-        return <Badge variant={s.variant} dot>{s.label}</Badge>;
+        const rawStatus = val || 'Unknown';
+        const statusKey = rawStatus.toLowerCase();
+        const s = RETURN_STATUSES[statusKey] || { variant: 'default' };
+        
+        // Map directly from database string: replace underscores with spaces and capitalize words
+        const displayLabel = rawStatus
+          .toLowerCase()
+          .replace(/_/g, ' ')
+          .replace(/\b\w/g, l => l.toUpperCase());
+
+        return <Badge variant={s.variant || 'default'} dot>{displayLabel}</Badge>;
       },
     },
     { key: 'amount', label: 'Amount', align: 'right',
       render: val => <span className="font-semibold">{formatCurrency(val)}</span> },
     { key: 'actions', label: 'Actions', align: 'right',
       render: (_, row) => {
-        const isTerminal = ['rejected', 'completed', 'failed'].includes(row.status?.toLowerCase());
+        const isTerminal = ['rejected', 'completed', 'failed'].includes((row.status || '').toLowerCase());
         return (
           <div className="flex items-center justify-end">
             <button
@@ -66,5 +77,5 @@ export default function ReturnsTable({ returns: items, onView }) {
     },
   ];
 
-  return <Table columns={columns} data={items} />;
+  return <Table columns={columns} data={items || []} />;
 }

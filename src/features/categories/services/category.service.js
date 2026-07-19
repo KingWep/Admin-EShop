@@ -8,8 +8,8 @@ export const categoryService = {
    * @param {number} page - 0-based page index
    * @param {number} size - items per page
    */
-  getAll: (page = 0, size = 10) =>
-    axiosClient.post(`${API_ENDPOINTS.CATEGORIES.GET_ALL}?page=${page}&size=${size}`),
+  getAll: (page = 0, size = 10, sort = 'id,desc') =>
+    axiosClient.post(`${API_ENDPOINTS.CATEGORIES.GET_ALL}?page=${page}&size=${size}&sort=${sort}`),
 
   /**
    * Get category by ID

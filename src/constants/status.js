@@ -35,5 +35,11 @@ export const RETURN_STATUSES = {
   requested: { label: 'Requested', variant: 'warning' },
   approved: { label: 'Approved', variant: 'success' },
   rejected: { label: 'Rejected', variant: 'danger' },
-  completed: { label: 'Completed', variant: 'info' },
+  received: { label: 'Received', variant: 'warning' },
+  inspecting: { label: 'Inspecting', variant: 'info' },
+  completed: { label: 'Completed', variant: 'success' },
+  // Legacy mappings for backwards compatibility with old DB records
+  pending: { label: 'Pending', variant: 'warning' },
+  pending_inspection: { label: 'Pending Inspection', variant: 'warning' },
+  in_progress: { label: 'In Progress', variant: 'info' }
 };

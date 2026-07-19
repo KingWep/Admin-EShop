@@ -5,6 +5,7 @@ import Button from '@/components/ui/Button';
 import { categoryApi } from '@/features/categories/services/category.service';
 import { categoryIconApi } from '@/features/categories/services/categoryIcon.service';
 import PageContainer from '@/components/layouts/PageContainer';
+import Swal from 'sweetalert2';
 
 
 // Tries every field name we've seen APIs use for an icon image, in order.
@@ -40,6 +41,7 @@ export default function AddCategoryPage() {
   const [form, setForm] = useState({
     name: '',
     description: '',
+    status: true,
     icon_id: '',
     icon_name: '',
   });
@@ -101,6 +103,7 @@ export default function AddCategoryPage() {
         setForm({
           name: category.name ?? '',
           description: category.description ?? '',
+          status: category.status ?? true,
           icon_id: category.icon_id ?? category.icon?.id ?? '',
           icon_name: category.icon_name ?? category.icon?.name ?? '',
         });
@@ -126,24 +129,35 @@ export default function AddCategoryPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener('mouseenter', Swal.stopTimer)
+        toast.addEventListener('mouseleave', Swal.resumeTimer)
+      }
+    });
+
     if (loadingCategory) {
-      setSubmitError('Category details are still loading. Please wait a moment.');
+      Toast.fire({ icon: 'warning', title: 'Category details are still loading. Please wait a moment.' });
       return;
     }
 
     if (!form.name.trim()) {
-      setSubmitError('Category name is required.');
+      Toast.fire({ icon: 'warning', title: 'Category name is required.' });
       return;
     }
 
     try {
       setSubmitting(true);
-      setSubmitError('');
-      setSubmitSuccess('');
 
       const payload = {
         name: form.name.trim(),
         description: form.description.trim(),
+        status: form.status,
         icon_id: form.icon_id ? Number(form.icon_id) : undefined,
       };
 
@@ -153,13 +167,19 @@ export default function AddCategoryPage() {
         await categoryApi.create(payload);
       }
 
-      setSubmitSuccess(isEdit ? 'Category updated successfully.' : 'Category created successfully.');
-      if (!isEdit) {
-        setForm({ name: '', description: '', icon_id: '', icon_name: '' });
-      }
+      Toast.fire({
+        icon: 'success',
+        title: isEdit ? 'Category updated successfully.' : 'Category created successfully.'
+      });
+
+      // Navigate back to the categories list
+      navigate('/dashboard/categories');
     } catch (err) {
       const message = err?.response?.data?.message || err?.message || 'Failed to save category.';
-      setSubmitError(message);
+      Toast.fire({
+        icon: 'error',
+        title: message
+      });
     } finally {
       setSubmitting(false);
     }
@@ -183,7 +203,7 @@ export default function AddCategoryPage() {
           <Button type="button" variant="secondary" onClick={() => navigate('/dashboard/categories')} className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 shadow-sm">
             Cancel
           </Button>
-          <Button type="submit" loading={submitting} disabled={loadingCategory} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+          <Button type="button" onClick={handleSubmit} loading={submitting} disabled={loadingCategory} className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
             {isEdit ? 'Save Changes' : 'Save Category'}
           </Button>
         </div>
@@ -198,12 +218,6 @@ export default function AddCategoryPage() {
       {loadError && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {loadError}
-        </div>
-      )}
-
-      {(submitError || submitSuccess) && (
-        <div className={`rounded-xl border px-4 py-3 text-sm ${submitError ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
-          {submitError || submitSuccess}
         </div>
       )}
 
@@ -244,6 +258,36 @@ export default function AddCategoryPage() {
                   className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 transition-colors focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
                 />
                 <p className="mt-1.5 text-right text-xs text-slate-400">{form.description.length}/500</p>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                  Status
+                </label>
+                <div className="flex items-center gap-6 mt-2">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="status"
+                      checked={form.status === true}
+                      disabled={loadingCategory}
+                      onChange={() => setForm(prev => ({ ...prev, status: true }))}
+                      className="w-4 h-4 accent-emerald-600 text-emerald-600 border-slate-300 focus:ring-emerald-500"
+                    />
+                    <span className="text-sm text-slate-700">Active</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="status"
+                      checked={form.status === false}
+                      disabled={loadingCategory}
+                      onChange={() => setForm(prev => ({ ...prev, status: false }))}
+                      className="w-4 h-4 accent-red-600 text-red-600 border-slate-300 focus:ring-red-500"
+                    />
+                    <span className="text-sm text-slate-700">Inactive</span>
+                  </label>
+                </div>
               </div>
 
               <div>

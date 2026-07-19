@@ -4,6 +4,7 @@ import { productService as productApi } from '@/features/products/services/produ
 import { subCategoryApi } from '../../brands/services/brand.service';
 import { useCategories } from '../../categories/hooks/useCategories';
 import { useSubCategories } from '../../subcategorie/hooks/useSubCategories';
+import Swal from 'sweetalert2';
 
 const CRITERIA_TYPE_PRODUCT_ID = 5;
 
@@ -20,6 +21,9 @@ const createVariant = (isDefault = false) => ({
     productSkuId: null,
     description: '',
     price: '',
+    inventory_quantity: '',
+    warehouse_location: '',
+    low_stock_threshold: '5',
     is_default: isDefault,
     operatorProductAttribute: false,
     product_attributes: [],
@@ -54,6 +58,11 @@ const buildSkuPayload = (variant) => ({
     price: parseOptionalNumber(variant.price),
     quantity: parseOptionalNumber(variant.inventory_quantity),
     is_default: variant.is_default,
+    low_stock_threshold: parseOptionalNumber(variant.low_stock_threshold),
+    inventory: {
+        quantity: parseOptionalNumber(variant.inventory_quantity),
+        warehouse_location: variant.warehouse_location?.trim() || undefined
+    },
     operatorProductAttribute: variant.operatorProductAttribute,
     product_attributes: buildProductAttributes(variant.product_attributes),
 });
@@ -64,6 +73,9 @@ const apiSkuToVariant = (sku) => ({
     productSkuId: sku.id ?? null,
     description: sku.description || sku.sku || '',
     price: String(sku.price ?? ''),
+    inventory_quantity: String(sku.inventory?.quantity ?? sku.quantity ?? ''),
+    warehouse_location: sku.inventory?.warehouse_location || '',
+    low_stock_threshold: String(sku.low_stock_threshold ?? '5'),
     is_default: !!sku.is_default,
     operatorProductAttribute:
         Array.isArray(sku.product_attributes) && sku.product_attributes.length > 0,
@@ -109,8 +121,6 @@ export function useProducts(productId = null) {
 
     // Submission state
     const [submitting, setSubmitting] = useState(false);
-    const [submitError, setSubmitError] = useState('');
-    const [submitSuccess, setSubmitSuccess] = useState('');
 
     // Images (new uploads)
     const [productImages, setProductImages] = useState([]);
@@ -127,10 +137,7 @@ export function useProducts(productId = null) {
         description: '',
     });
 
-    const clearFeedback = () => {
-        setSubmitError('');
-        setSubmitSuccess('');
-    };
+    const clearFeedback = () => {};
 
     // ---- Edit-mode hydration ----
     useEffect(() => {
@@ -423,16 +430,28 @@ export function useProducts(productId = null) {
 
         const validationError = validate();
         if (validationError) {
-            setSubmitError(validationError);
-            setSubmitSuccess('');
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                icon: 'warning',
+                title: validationError,
+            });
             return;
         }
 
         const normalizedVariants = variants.map(buildSkuPayload);
 
         if (!normalizedVariants.some(variant => variant.is_default)) {
-            setSubmitError('Choose one default SKU.');
-            setSubmitSuccess('');
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                icon: 'warning',
+                title: 'Choose one default SKU.',
+            });
             return;
         }
 
@@ -447,22 +466,41 @@ export function useProducts(productId = null) {
 
         try {
             setSubmitting(true);
-            setSubmitError('');
-            setSubmitSuccess('');
 
             if (isEditMode) {
                 await productApi.update(productId, payload);
-                setSubmitSuccess('Product updated successfully.');
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    icon: 'success',
+                    title: 'Product updated successfully',
+                });
                 setProductImages([]);
                 setTimeout(() => navigate(`/dashboard/products/view/${productId}`), 1200);
             } else {
                 await productApi.create(payload);
-                setSubmitSuccess('Product created successfully.');
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    icon: 'success',
+                    title: 'Product created successfully',
+                });
                 resetForm();
             }
         } catch (err) {
             const message = err?.response?.data?.message || err?.message || `Failed to ${isEditMode ? 'update' : 'create'} product.`;
-            setSubmitError(message);
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                icon: 'error',
+                title: message,
+            });
         } finally {
             setSubmitting(false);
         }
@@ -489,8 +527,6 @@ export function useProducts(productId = null) {
 
         // submission state
         submitting,
-        submitError,
-        submitSuccess,
 
         // basic fields
         form,

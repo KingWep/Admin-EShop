@@ -2,12 +2,12 @@ import React, { useMemo } from 'react';
 import { HiOutlineBriefcase, HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineTrash } from 'react-icons/hi2';
 import { StatCardSkeleton } from '@/components/ui/Skeleton';
 
-export default function BrandStats({ brands = [], loading }) {
+export default function BrandStats({ brands = [], totalElements = 0, globalStats = { total: 0, active: 0, inactive: 0, deleted: 0 }, loading }) {
   const stats = useMemo(() => {
-    let total = brands.length;
-    let active = brands.filter(b => b.status === 'active').length;
-    let inactive = brands.filter(b => b.status === 'inactive').length;
-    let deleted = brands.filter(b => b.status === 'deleted').length;
+    let total = globalStats.total > 0 ? globalStats.total : (totalElements > 0 ? totalElements : brands.length);
+    let active = globalStats.active || brands.filter(b => b.status === 'active').length;
+    let inactive = globalStats.inactive || brands.filter(b => b.status === 'inactive').length;
+    let deleted = globalStats.deleted || brands.filter(b => b.status === 'deleted').length;
 
     return [
       { id: 1, title: 'Total Brands', value: total, icon: HiOutlineBriefcase, color: 'text-blue-600', bg: 'bg-blue-50' },
@@ -15,7 +15,7 @@ export default function BrandStats({ brands = [], loading }) {
       { id: 3, title: 'Inactive Brands', value: inactive, icon: HiOutlineXCircle, color: 'text-amber-600', bg: 'bg-amber-50' },
       { id: 4, title: 'Deleted Brands', value: deleted, icon: HiOutlineTrash, color: 'text-rose-600', bg: 'bg-rose-50' }
     ];
-  }, [brands]);
+  }, [brands, totalElements, globalStats]);
 
   return (
     <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">

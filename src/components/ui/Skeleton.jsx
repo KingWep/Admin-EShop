@@ -64,6 +64,181 @@ export function TableSkeleton({ rows = 5, cols = 5 }) {
 }
 
 /**
+ * Full-page skeleton for the Edit Product page.
+ * Mirrors the layout: header | [basic info + variants] | [images sidebar]
+ */
+export function EditProductSkeleton() {
+  return (
+    <div className="px-6 py-6 space-y-6">
+      {/* Page header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-2">
+          <SkeletonBlock className="h-6 w-36" />
+          <SkeletonBlock className="h-4 w-56" />
+        </div>
+        <div className="flex gap-3">
+          <SkeletonBlock className="h-9 w-20 rounded-lg" />
+          <SkeletonBlock className="h-9 w-32 rounded-lg" />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-12 gap-6">
+        {/* Left column — Basic info + Variants */}
+        <div className="col-span-12 lg:col-span-7 space-y-6">
+          {/* Basic Information card */}
+          <div className="rounded-xl border border-slate-100 bg-white p-5 space-y-4">
+            <SkeletonBlock className="h-5 w-40 mb-2" />
+            <SkeletonBlock className="h-10 w-full rounded-lg" />
+            <div className="grid grid-cols-2 gap-4">
+              <SkeletonBlock className="h-10 rounded-lg" />
+              <SkeletonBlock className="h-10 rounded-lg" />
+            </div>
+            <SkeletonBlock className="h-24 w-full rounded-lg" />
+            <div className="grid grid-cols-2 gap-4">
+              <SkeletonBlock className="h-10 rounded-lg" />
+              <SkeletonBlock className="h-10 rounded-lg" />
+            </div>
+          </div>
+
+          {/* Product Variants card */}
+          <div className="rounded-xl border border-slate-100 bg-white p-5 space-y-4">
+            <SkeletonBlock className="h-5 w-40 mb-2" />
+            <SkeletonBlock className="h-4 w-72" />
+
+            {/* SKU row 1 */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <SkeletonBlock className="h-5 w-16" />
+                <SkeletonBlock className="h-8 w-20 rounded-lg" />
+              </div>
+              <SkeletonBlock className="h-10 w-full rounded-lg" />
+              <div className="grid grid-cols-2 gap-3">
+                <SkeletonBlock className="h-10 rounded-lg" />
+                <SkeletonBlock className="h-10 rounded-lg" />
+                <SkeletonBlock className="h-10 rounded-lg" />
+                <SkeletonBlock className="h-10 rounded-lg" />
+              </div>
+              <SkeletonBlock className="h-8 w-40 rounded-lg" />
+            </div>
+
+            <SkeletonBlock className="h-9 w-24 rounded-lg" />
+          </div>
+        </div>
+
+        {/* Right column — Images */}
+        <div className="col-span-12 lg:col-span-5 space-y-6">
+          <div className="rounded-xl border border-slate-100 bg-white p-5 space-y-3">
+            <SkeletonBlock className="h-5 w-36 mb-2" />
+            <div className="grid grid-cols-3 gap-3">
+              <SkeletonBlock className="aspect-square rounded-xl" />
+              <SkeletonBlock className="aspect-square rounded-xl" />
+              <SkeletonBlock className="aspect-square rounded-xl" />
+            </div>
+          </div>
+          <div className="rounded-xl border border-slate-100 bg-white p-5 space-y-3">
+            <SkeletonBlock className="h-5 w-36" />
+            <SkeletonBlock className="h-48 w-full rounded-xl" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Full-page skeleton for the Product Detail page.
+ * Mirrors: header | [General Info + SKUs] | [Status/Org + Images]
+ */
+export function ProductDetailSkeleton() {
+  return (
+    <div className="px-6 py-6 space-y-6">
+      {/* Page header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-2">
+          <SkeletonBlock className="h-6 w-40" />
+          <SkeletonBlock className="h-4 w-64" />
+        </div>
+        <SkeletonBlock className="h-9 w-28 rounded-lg" />
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        {/* Left column — General Info + SKUs */}
+        <div className="col-span-1 xl:col-span-2 space-y-6">
+          {/* General Information card */}
+          <div className="rounded-xl border border-slate-100 bg-white p-5 space-y-5">
+            <SkeletonBlock className="h-5 w-44" />
+            <div className="space-y-2">
+              <SkeletonBlock className="h-3 w-16" />
+              <SkeletonBlock className="h-5 w-56" />
+            </div>
+            <div className="space-y-2">
+              <SkeletonBlock className="h-3 w-24" />
+              <SkeletonBlock className="h-4 w-full" />
+              <SkeletonBlock className="h-4 w-4/5" />
+              <SkeletonBlock className="h-4 w-3/5" />
+            </div>
+          </div>
+
+          {/* Variants (SKUs) card */}
+          <div className="rounded-xl border border-slate-100 bg-white p-5 space-y-4">
+            <SkeletonBlock className="h-5 w-36" />
+            {/* SKU row */}
+            {[0, 1].map((i) => (
+              <div key={i} className="rounded-xl border border-slate-200 p-5 bg-white shadow-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <SkeletonBlock className="h-5 w-32" />
+                  <SkeletonBlock className="h-6 w-24 rounded-full" />
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <SkeletonBlock className="h-16 rounded-lg" />
+                  <SkeletonBlock className="h-16 rounded-lg" />
+                  <SkeletonBlock className="h-16 rounded-lg" />
+                </div>
+                <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-100">
+                  <SkeletonBlock className="h-7 w-24 rounded-md" />
+                  <SkeletonBlock className="h-7 w-28 rounded-md" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right column — Status & Images */}
+        <div className="col-span-1 space-y-6">
+          {/* Status & Organization card */}
+          <div className="rounded-xl border border-slate-100 bg-white p-5 space-y-5">
+            <SkeletonBlock className="h-5 w-44" />
+            <div className="space-y-2">
+              <SkeletonBlock className="h-3 w-16" />
+              <SkeletonBlock className="h-6 w-20 rounded-full" />
+            </div>
+            <div className="pt-4 border-t border-slate-100 space-y-2">
+              <SkeletonBlock className="h-3 w-20" />
+              <SkeletonBlock className="h-5 w-36" />
+            </div>
+            <div className="pt-4 border-t border-slate-100 space-y-2">
+              <SkeletonBlock className="h-3 w-24" />
+              <SkeletonBlock className="h-5 w-28" />
+            </div>
+          </div>
+
+          {/* Product Images card */}
+          <div className="rounded-xl border border-slate-100 bg-white p-5 space-y-3">
+            <SkeletonBlock className="h-5 w-36" />
+            <div className="grid grid-cols-2 gap-3">
+              <SkeletonBlock className="aspect-square rounded-lg" />
+              <SkeletonBlock className="aspect-square rounded-lg" />
+              <SkeletonBlock className="aspect-square rounded-lg" />
+              <SkeletonBlock className="aspect-square rounded-lg" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Generic skeleton block.
  */
 export default SkeletonBlock;

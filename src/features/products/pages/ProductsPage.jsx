@@ -10,6 +10,7 @@ import { HiPlus } from 'react-icons/hi2';
 import {  productStats  } from '@/features/reports/components/PageStats';
 import { productApi } from '@/features/products/services/product.service';
 import PageContainer from '@/components/layouts/PageContainer';
+import Swal from 'sweetalert2';
 
 
 const CRITERIA_TYPE = {
@@ -27,7 +28,7 @@ export default function ProductsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
-  const [pageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -122,8 +123,24 @@ export default function ProductsPage() {
       await productApi.delete(id);
       setProducts(prev => prev.filter(p => p.id !== id));
       setTotalItems(prev => Math.max(0, prev - 1));
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'success',
+        title: 'Product deleted successfully'
+      });
     } catch (err) {
       console.error('Failed to delete product', err);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'error',
+        title: err?.response?.data?.message || err?.message || 'Failed to delete product'
+      });
       setError(null);
     }
   };
@@ -165,13 +182,29 @@ export default function ProductsPage() {
         loadingMessage="Loading products..."
         footer={
           !loading && !error && filtered.length > 0 && (
-            <div className="w-full sm:w-auto overflow-hidden rounded-lg border border-slate-100">
-              <Pagination
-                pageNumber={pageNumber}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            </div>
+            <>
+              <div className="flex items-center gap-3 text-sm text-slate-500">
+                <span>Rows per page:</span>
+                <select 
+                  value={pageSize} 
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                </select>
+              </div>
+              <div className="w-full sm:w-auto overflow-hidden rounded-lg border border-slate-100">
+                <Pagination
+                  pageNumber={pageNumber}
+                  totalPages={totalPages}
+                  pageSize={pageSize}
+                  totalResults={totalItems}
+                  onPageChange={handlePageChange}
+                />
+              </div>
+            </>
           )
         }
       >

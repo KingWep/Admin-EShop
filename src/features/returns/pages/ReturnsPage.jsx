@@ -1,38 +1,82 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { HiOutlineMagnifyingGlass, HiOutlineFunnel, HiOutlineChevronDown } from 'react-icons/hi2';
 import ReturnsTable from '../components/ReturnsTable';
-import {  returns as initialReturns  } from '@/features/dashboard/services/dashboard.service';
 import Badge from '@/components/ui/Badge';
-import { PageHeader, DataTableCard } from '@/components/ui';
-import {  returnStats  } from '@/features/reports/components/PageStats';
+import { PageHeader, DataTableCard, TableSkeleton } from '@/components/ui';
+import Pagination from '@/components/ui/Pagination';
 import PageContainer from '@/components/layouts/PageContainer';
+import { PackageX, CheckCircle, Clock, Percent } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
+import { useReturns } from '../hooks/useReturns';
+import { useReturnSummary } from '../hooks/useReturnSummary';
 
 export default function ReturnsPage() {
   const navigate = useNavigate();
-  const [returns, setReturns] = useState(initialReturns);
 
+  const [page, setPage] = useState(1);
+  const [size, setSize] = useState(10);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
 
-  const filteredReturns = returns.filter(r => {
-    const matchSearch = !search || 
-      r.orderId.toLowerCase().includes(search.toLowerCase()) || 
-      r.customer.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = !statusFilter || r.status === statusFilter;
-    const matchType = !typeFilter || r.type === typeFilter;
-    return matchSearch && matchStatus && matchType;
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  const {
+    returns,
+    totalElements,
+    totalPages,
+    loading,
+    error,
+    refetch,
+  } = useReturns({
+    page,
+    size,
+    criteria_type: 0,
+    criteria_value: debouncedSearch
   });
 
-  const counts = {
-    total: returns.length,
-    requested: returns.filter(r => r.status === 'requested').length,
-    approved: returns.filter(r => r.status === 'approved').length,
-    completed: returns.filter(r => r.status === 'completed').length,
-    rejected: returns.filter(r => r.status === 'rejected').length,
-  };
+  const { summary, loading: summaryLoading } = useReturnSummary();
+
+  const dynamicStats = summary ? [
+    { 
+      label: 'Total Returns', 
+      value: summary.total_returns ?? '0',
+      iconBgColorClass: "bg-blue-100 text-blue-600",
+      icon: <PackageX size={24} />
+    },
+    { 
+      label: 'Processed Returns', 
+      value: summary.processed_returns ?? '0',
+      iconBgColorClass: "bg-emerald-100 text-emerald-600",
+      icon: <CheckCircle size={24} />
+    },
+    { 
+      label: 'Pending Returns', 
+      value: summary.pending_returns ?? '0',
+      iconBgColorClass: "bg-amber-100 text-amber-600",
+      icon: <Clock size={24} />
+    },
+    { 
+      label: 'Return Rate', 
+      value: summary.return_rate != null ? `${summary.return_rate}%` : '0%',
+      iconBgColorClass: "bg-purple-100 text-purple-600",
+      icon: <Percent size={24} />
+    }
+  ] : [{}, {}, {}, {}];
+
+  const filteredReturns = returns?.filter(r => {
+    const matchStatus = !statusFilter || (r.status || '').toLowerCase() === statusFilter.toLowerCase();
+    const matchType = !typeFilter || (r.return_type || '').toLowerCase() === typeFilter.toLowerCase();
+    return matchStatus && matchType;
+  }) || [];
 
   return (
     <PageContainer>
@@ -40,7 +84,8 @@ export default function ReturnsPage() {
         title="Returns"
         description="Process and track customer product returns."
         crumbs={[{ label: 'Dashboard', path: '/' }, { label: 'Returns' }]}
-        stats={returnStats}
+        stats={dynamicStats}
+        loading={summaryLoading}
       />
 
       <DataTableCard
@@ -68,8 +113,13 @@ export default function ReturnsPage() {
                 <option value="">All Statuses</option>
                 <option value="requested">Requested</option>
                 <option value="approved">Approved</option>
-                <option value="completed">Completed</option>
                 <option value="rejected">Rejected</option>
+                <option value="received">Received</option>
+                <option value="inspecting">Inspecting</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+                <option value="pending_inspection">Pending Inspection</option>
+                <option value="in_progress">In Progress</option>
               </select>
               <HiOutlineChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             </div>
@@ -82,8 +132,8 @@ export default function ReturnsPage() {
                 className="w-full appearance-none rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-3 pr-8 text-sm font-medium text-slate-600 outline-none transition-colors hover:bg-slate-100 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100"
               >
                 <option value="">All Types</option>
-                <option value="return">Return</option>
                 <option value="refund">Refund</option>
+                <option value="return">Return</option>
                 <option value="exchange">Exchange</option>
               </select>
               <HiOutlineChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
@@ -98,8 +148,25 @@ export default function ReturnsPage() {
             </div>
           </div>
         }
+        footer={
+          <Pagination
+            pageNumber={page}
+            totalPages={totalPages}
+            pageSize={size}
+            totalResults={totalElements}
+            onPageChange={setPage}
+          />
+        }
       >
-        <ReturnsTable returns={filteredReturns} onView={(row) => navigate(`/dashboard/returns/${row.id}`)} />
+        {loading ? (
+          <div className="p-4">
+            <TableSkeleton rows={10} cols={9} />
+          </div>
+        ) : error ? (
+          <div className="p-8 text-center text-red-500 text-sm">{error}</div>
+        ) : (
+          <ReturnsTable returns={filteredReturns} onView={(row) => navigate(`/dashboard/returns/${row.return_id}`)} />
+        )}
       </DataTableCard>
     </PageContainer>
   );

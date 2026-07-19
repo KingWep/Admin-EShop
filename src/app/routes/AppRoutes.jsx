@@ -13,6 +13,7 @@ import PaymentDetailPage from '@/features/payments/pages/PaymentDetailPage';
 import RefundsPage from '@/features/refunds/pages/RefundsPage';
 import ReportsPage from '@/features/reports/pages/ReportsPage';
 import TransactionsPage from '@/features/payments/pages/TransactionsPage';
+import TransactionDetailPage from '@/features/payments/pages/TransactionDetailPage';
 import CustomersPage from '@/features/customers/pages/CustomersPage';
 import CustomerDetailPage from '@/features/customers/pages/CustomerDetailPage';
 import CustomerGroupsPage from '@/features/customerGroups/pages/CustomerGroupsPage';
@@ -23,8 +24,11 @@ import EditProductPage from '@/features/products/pages/EditProductPage';
 import ProductDetailPage from '@/features/products/pages/ProductDetailPage';
 import CategoriesPage from '@/features/categories/pages/CategoriesPage';
 import AddCategoryPage from '@/features/categories/pages/AddCategoryPage';
+import CategoryDetailPage from '@/features/categories/pages/CategoryDetailPage';
 import BrandsPage from '@/features/brands/pages/BrandsPage';
 import AddBrandPage from '@/features/brands/pages/AddBrandPage';
+import EditBrandPage from '@/features/brands/pages/EditBrandPage';
+import BrandDetailPage from '@/features/brands/pages/BrandDetailPage';
 import InventoryPage from '@/features/inventory/pages/InventoryPage';
 import SettingsPage from '@/features/settings/pages/SettingsPage';
 import UsersPage from '@/features/users/pages/UsersPage';
@@ -55,7 +59,8 @@ export default function AppRoutes() {
         <Route path="payments" element={<PaymentsPage />} />
         <Route path="payments/:id" element={<PaymentDetailPage />} />
         <Route path="refunds" element={<RefundsPage />} />
-        <Route path="transactions" element={<TransactionsPage />} />{/* placeholder */}
+        <Route path="transactions" element={<TransactionsPage />} />
+        <Route path="transactions/:id" element={<TransactionDetailPage />} />
 
         {/* Customers group */}
         <Route path="customers" element={<CustomersPage />} />
@@ -72,9 +77,11 @@ export default function AppRoutes() {
         <Route path="categories" element={<CategoriesPage />} />
         <Route path="categories/add" element={<AddCategoryPage />} />
         <Route path="categories/edit/:id" element={<AddCategoryPage />} />
+        <Route path="categories/view/:id" element={<CategoryDetailPage />} />
         <Route path="brands" element={<BrandsPage />} />
         <Route path="brands/add" element={<AddBrandPage />} />
-        <Route path="brands/edit/:id" element={<AddBrandPage />} />
+        <Route path="brands/view/:id" element={<BrandDetailPage />} />
+        <Route path="brands/edit/:id" element={<EditBrandPage />} />
         <Route path="inventory" element={<InventoryPage />} />
 
         {/* Reports group */}

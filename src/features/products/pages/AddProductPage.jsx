@@ -4,6 +4,7 @@ import ImageUploadInput from '@/components/ui/ImageUploadInput';
 import { Card } from '@/components/ui/Card';
 import { useProducts } from '@/features/products/hooks/useProducts';
 import PageContainer from '@/components/layouts/PageContainer';
+import SearchableSelect from '@/components/ui/SearchableSelect';
 
 
 export default function AddProductForm() {
@@ -21,8 +22,6 @@ export default function AddProductForm() {
 
     // submission state
     submitting,
-    submitError,
-    submitSuccess,
 
     // basic fields
     form,
@@ -69,12 +68,6 @@ export default function AddProductForm() {
         </div>
       </div>
 
-      {(submitError || submitSuccess) && (
-        <div className={`mb-6 rounded-lg border px-4 py-3 text-sm ${submitError ? 'border-red-200 bg-red-50 text-red-700' : 'border-emerald-200 bg-emerald-50 text-emerald-700'}`}>
-          {submitError || submitSuccess}
-        </div>
-      )}
-
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-7 space-y-6">
           <Card title="Basic Information">
@@ -88,22 +81,17 @@ export default function AddProductForm() {
                 required
               />
 
-              <Select
-                label="Category *"
-                value={selectedCategoryId}
-                onChange={handleCategoryChange}
-                error={categoryError || undefined}
-                disabled={loadingCategories}
-              >
-                <option value="" className="text-black">
-                  {loadingCategories ? 'Loading categories…' : '— Select category —'}
-                </option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </Select>
+              <div className="form-group">
+                <label className="form-label">Category <span className="ml-0.5 text-red-500">*</span></label>
+                <SearchableSelect
+                  options={categories.map(cat => ({ label: cat.name, value: cat.id }))}
+                  value={selectedCategoryId}
+                  onChange={(val) => handleCategoryChange({ target: { value: val } })}
+                  placeholder={loadingCategories ? 'Loading categories…' : '— Select category —'}
+                  disabled={loadingCategories}
+                />
+                {categoryError && <p className="mt-1 text-xs text-red-600">{categoryError}</p>}
+              </div>
 
               <Textarea
                 label="Description *"
@@ -113,28 +101,24 @@ export default function AddProductForm() {
                 onChange={(e) => updateField('description', e.target.value)}
               />
               <div className="row-span-2 text-sm text-slate-500">
-                <Select
-                  label="Sub-Category *"
-                  value={selectedSubCategoryId}
-                  onChange={handleSubCategoryChange}
-                  disabled={!selectedCategoryId || loadingSubCategories}
-                  className="mb-5"
-                >
-                  <option value="">
-                    {!selectedCategoryId
-                      ? '— Select a category first —'
-                      : loadingSubCategories
-                        ? 'Loading…'
-                        : subCategories.length === 0
-                          ? 'No sub-categories found'
-                          : '— Select sub-category —'}
-                  </option>
-                  {subCategories.map((sub) => (
-                    <option key={sub.id} value={sub.id}>
-                      {sub.name}
-                    </option>
-                  ))}
-                </Select>
+                <div className="form-group mb-5">
+                  <label className="form-label">Sub-Category <span className="ml-0.5 text-red-500">*</span></label>
+                  <SearchableSelect
+                    options={subCategories.map(sub => ({ label: sub.name, value: sub.id }))}
+                    value={selectedSubCategoryId}
+                    onChange={(val) => handleSubCategoryChange({ target: { value: val } })}
+                    placeholder={
+                      !selectedCategoryId
+                        ? '— Select a category first —'
+                        : loadingSubCategories
+                          ? 'Loading…'
+                          : subCategories.length === 0
+                            ? 'No sub-categories found'
+                            : '— Select sub-category —'
+                    }
+                    disabled={!selectedCategoryId || loadingSubCategories}
+                  />
+                </div>
 
                 <Select
                   label="Status (Active) *"
@@ -200,6 +184,28 @@ export default function AddProductForm() {
                         placeholder="999.99"
                         value={variant.price}
                         onChange={(e) => updateVariant(variant.id, 'price', e.target.value)}
+                      />
+                      <Input
+                        label="Inventory Quantity *"
+                        type="number"
+                        min="0"
+                        placeholder="50"
+                        value={variant.inventory_quantity}
+                        onChange={(e) => updateVariant(variant.id, 'inventory_quantity', e.target.value)}
+                      />
+                      <Input
+                        label="Warehouse Location"
+                        placeholder="Warehouse A"
+                        value={variant.warehouse_location}
+                        onChange={(e) => updateVariant(variant.id, 'warehouse_location', e.target.value)}
+                      />
+                      <Input
+                        label="Low Stock Threshold"
+                        type="number"
+                        min="0"
+                        placeholder="5"
+                        value={variant.low_stock_threshold}
+                        onChange={(e) => updateVariant(variant.id, 'low_stock_threshold', e.target.value)}
                       />
                     </div>
 

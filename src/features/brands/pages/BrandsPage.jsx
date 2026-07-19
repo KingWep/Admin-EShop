@@ -8,6 +8,7 @@ import Pagination from '@/components/ui/Pagination';
 import { PageHeader, Button, DataTableCard } from '@/components/ui';
 import { HiPlus } from 'react-icons/hi2';
 import { brandService } from '@/features/brands/services/brand.service';
+import Swal from 'sweetalert2';
 import PageContainer from '@/components/layouts/PageContainer';
 
 export default function BrandsPage() {
@@ -16,6 +17,9 @@ export default function BrandsPage() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [size, setSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [globalStats, setGlobalStats] = useState({ total: 0, active: 0, inactive: 0, deleted: 0 });
 
   // Filter state
   const [search, setSearch] = useState('');
@@ -25,12 +29,21 @@ export default function BrandsPage() {
 
   const navigate = useNavigate();
 
-  const fetchBrands = useCallback(async () => {
+  const fetchBrands = useCallback(async (p = page, s = size) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await brandService.getAll(page, size);
-      const raw = res?.data?.payload ?? [];
+      const res = await brandService.getAll(p, s);
+      const data = res?.data || res;
+      const raw = data?.payload ?? data?.content ?? data?.items ?? [];
+
+      if (!Array.isArray(data)) {
+        setTotalPages(data.totalPages ?? data.total_pages ?? Math.ceil((data.totalElements ?? data.total ?? raw.length) / size) ?? 1);
+        setTotalElements(data.totalElements ?? data.total ?? raw.length ?? 0);
+      } else {
+        setTotalPages(Math.ceil(raw.length / size));
+        setTotalElements(raw.length);
+      }
 
       const list = raw
         .filter(item => item && item.id != null)
@@ -42,7 +55,8 @@ export default function BrandsPage() {
           category_name: item.category_name ?? 'Uncategorized',
           description: item.description ?? '',
           image: item.image ?? null,
-          status: 'active',
+          status: item.status === true ? 'active' : 'inactive',
+          created_at: item.created_at ?? null,
         }));
 
       setBrands(list);
@@ -55,14 +69,51 @@ export default function BrandsPage() {
   }, [page, size]);
 
   useEffect(() => {
-    void fetchBrands();
-  }, [fetchBrands]);
+    const timer = setTimeout(() => {
+      if (hasActive) {
+        void fetchBrands(0, 1000);
+      } else {
+        void fetchBrands(page, size);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [page, size, hasActive, fetchBrands]);
+
+  useEffect(() => {
+    // Fetch global stats in the background without blocking the main table
+    const fetchStats = async () => {
+      try {
+        const res = await brandService.getAll(0, 10000);
+        const data = res?.data || res;
+        const raw = data?.payload ?? data?.content ?? data?.items ?? [];
+        
+        let active = 0, inactive = 0, deleted = 0;
+        raw.forEach(item => {
+          if (item.status === 'deleted') deleted++;
+          else if (item.status === true || item.status === 'active') active++;
+          else inactive++; // null, false, or 'inactive'
+        });
+        setGlobalStats({ total: raw.length, active, inactive, deleted });
+      } catch (err) {
+        console.error('Failed to fetch global stats:', err);
+      }
+    };
+    void fetchStats();
+  }, [brands]); // Re-fetch stats when brands change (e.g., after add/edit/delete)
 
   const handleDelete = async (id) => {
     const brand = brands.find(item => item.id === id);
     if (!brand) return;
     try {
       await brandService.delete(id);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'success',
+        title: 'Brand deleted successfully',
+      });
       await fetchBrands();
     } catch (err) {
       console.error('Failed to delete brand:', err);
@@ -116,7 +167,12 @@ export default function BrandsPage() {
         </Button>
       </PageHeader>
 
-      <BrandStats brands={brands} loading={loading} />
+      <BrandStats 
+        brands={brands} 
+        totalElements={totalElements} 
+        globalStats={globalStats}
+        loading={loading} 
+      />
 
       <DataTableCard
         toolbar={
@@ -147,9 +203,9 @@ export default function BrandsPage() {
             <div className="w-full sm:w-auto overflow-hidden rounded-lg border border-slate-100">
               <Pagination
                 pageNumber={page}
-                totalPages={Math.max(1, Math.ceil(filteredBrands.length / size))}
+                totalPages={hasActive ? Math.max(1, Math.ceil(filteredBrands.length / size)) : totalPages}
                 pageSize={size}
-                totalResults={filteredBrands.length}
+                totalResults={hasActive ? filteredBrands.length : totalElements}
                 onPageChange={setPage}
               />
             </div>
@@ -157,7 +213,8 @@ export default function BrandsPage() {
         }
       >
         <BrandTable
-          brands={filteredBrands}
+          brands={hasActive ? filteredBrands.slice((page - 1) * size, page * size) : filteredBrands}
+          onView={(brand) => navigate(`/dashboard/brands/view/${brand.id}`)}
           onEdit={(brand) => navigate(`/dashboard/brands/edit/${brand.id}`)}
           onDelete={handleDelete}
           loading={loading}

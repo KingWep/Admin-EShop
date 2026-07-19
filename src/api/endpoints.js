@@ -109,4 +109,18 @@ export const API_ENDPOINTS = {
     GET_BY_TRANSACTION_NO: '/api/v1/payment-transactions/no/{transactionNo}',
     GET_BY_CUSTOMER_ID: '/api/v1/payment-transactions/customer/{customerId}',
   },
+  
+  RETURN: {
+  REJECT: '/admin/returns/{returnId}/reject',
+  RECEIVE: '/admin/returns/{returnId}/receive',
+  START_INSPECTION: '/admin/returns/{returnId}/inspect/start',
+  COMPLETE_INSPECTION: '/admin/returns/{returnId}/inspect/complete',
+  APPROVE: '/admin/returns/{returnId}/approve',
+
+  CREATE_USER_RETURN: '/admin/returns/user',
+  GET_ALL: '/admin/returns/returns',
+  GET_BY_ID: '/admin/returns/{returnId}',
+  GET_HISTORY: '/admin/returns/{returnId}/history',
+  GET_SUMMARY: '/admin/returns/summary',
+},
 };

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Button, PageHeader, Badge, PageLoader } from '@/components/ui';
+import { Button, PageHeader, Badge } from '@/components/ui';
 import { Card } from '@/components/ui/Card';
 import { productService } from '@/features/products/services/product.service';
 import PageContainer from '@/components/layouts/PageContainer';
+import { ProductDetailSkeleton } from '@/components/ui/Skeleton';
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -46,7 +47,7 @@ export default function ProductDetailPage() {
     };
   }, [id]);
 
-  if (loading) return <PageLoader />;
+  if (loading) return <ProductDetailSkeleton />;
 
   if (error) {
     return (
@@ -82,9 +83,14 @@ export default function ProductDetailPage() {
             { label: product.name }
           ]}
         />
-        <Link to={`/dashboard/products/edit/${id}`}>
-          <Button>Edit product</Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link to="/dashboard/products">
+            <Button variant="secondary">← Back to Products</Button>
+          </Link>
+          <Link to={`/dashboard/products/edit/${id}`}>
+            <Button>Edit product</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">

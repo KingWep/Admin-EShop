@@ -34,8 +34,19 @@ export function useBrands(categoryId, initialBrandId = null) {
     const fetchBrands = async () => {
       try {
         setLoading(true);
-        const res = await brandService.getByCategoryId(categoryId);
-        const raw = Array.isArray(res) ? res : (res?.data?.payload ?? res?.content ?? []);
+        const res = await brandService.getByCategoryId(categoryId, 1, 1000);
+        console.log('[useBrands] raw API response:', res);
+        const raw = Array.isArray(res)
+          ? res
+          : (
+              res?.data?.payload ??
+              res?.payload ??
+              (Array.isArray(res?.data) ? res.data : null) ??
+              res?.content ??
+              res?.items ??
+              []
+            );
+        console.log('[useBrands] extracted raw list:', raw);
         const list = raw
           .map(item => (item?.data != null ? item.data : item))
           .filter(item => item && item.id != null);

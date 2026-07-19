@@ -1,5 +1,6 @@
 // src/features/payments/components/TransactionsTable.jsx
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Badge from '@/components/ui/Badge';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { cn } from '@/utils/cn';
@@ -113,15 +114,17 @@ export default function TransactionsTable({ transactions = [], stats, loading = 
 
   // Normalise a transaction — works for both API shape and legacy mock shape
   const normalise = (t) => ({
+    originalId:    t.id,
     id:            t.transaction_no ?? t.id,
     orderId:       t.order_id       ?? t.orderId,
-    customerId:    t.customer_id    ?? null,
+    customerId:    t.customer_id    ?? t.customerId ?? null,
     customerName:  t.customer?.name ?? `Customer #${t.customer_id ?? t.customerId ?? ''}`,
     customerEmail: t.customer?.email ?? t.masked_account ?? '',
     customerAvatar: t.customer?.avatar ?? null,
-    datetime:      t.created_at     ?? t.datetime ?? null,
+    datetime:      t.createdAt      ?? t.created_at ?? t.datetime ?? null,
+    updatedAt:     t.updatedAt      ?? null,
     method:        t.payment_method ?? t.method   ?? '',
-    maskedAccount: t.masked_account ?? t.methodDetail ?? '',
+    maskedAccount: t.masked_account ?? t.maskedAccount ?? '',
     status:        t.status         ?? 'PENDING',
     amount:        t.amount         ?? 0,
     currency:      t.currency       ?? 'USD',
@@ -249,7 +252,7 @@ export default function TransactionsTable({ transactions = [], stats, loading = 
           <table className="min-w-full divide-y divide-slate-100">
             <thead>
               <tr className="bg-slate-50">
-                {['Transaction No', 'Order ID', 'Customer', 'Payment Method', 'Masked Account', 'Status', 'Amount', 'Action'].map(h => (
+                {['Transaction No', 'Order ID', 'Date', 'Customer', 'Payment Method', 'Masked Account', 'Status', 'Amount', 'Action'].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                     {h}
                   </th>
@@ -261,7 +264,7 @@ export default function TransactionsTable({ transactions = [], stats, loading = 
                 [...Array(5)].map((_, i) => <SkeletonRow key={i} />)
               ) : paginated.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center text-sm text-slate-400">
+                  <td colSpan={9} className="py-16 text-center text-sm text-slate-400">
                     {error ? 'Could not load transactions.' : 'No transactions found.'}
                   </td>
                 </tr>
@@ -278,6 +281,12 @@ export default function TransactionsTable({ transactions = [], stats, loading = 
                     {/* Order ID */}
                     <td className="px-4 py-3 text-sm font-medium text-slate-600 whitespace-nowrap">
                       {t.orderId != null ? `#${t.orderId}` : '—'}
+                    </td>
+
+                    {/* Date */}
+                    <td className="px-4 py-3 whitespace-nowrap">
+                      <p className="text-sm font-medium text-slate-800">{date}</p>
+                      <p className="text-xs text-slate-400">{time}</p>
                     </td>
 
                     {/* Customer */}
@@ -328,12 +337,13 @@ export default function TransactionsTable({ transactions = [], stats, loading = 
 
                     {/* Action */}
                     <td className="px-4 py-3 whitespace-nowrap">
-                      <button
+                      <Link
+                        to={`/dashboard/transactions/${t.originalId}`}
                         title={t.remarks || 'View details'}
                         className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                       >
                         <HiOutlineEye className="h-4 w-4" />
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 );

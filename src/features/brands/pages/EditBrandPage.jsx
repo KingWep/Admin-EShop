@@ -1,6 +1,6 @@
-// src/features/brands/pages/AddBrandPage.jsx
+// src/features/brands/pages/EditBrandPage.jsx
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { HiOutlineCloudArrowUp, HiOutlineInformationCircle } from 'react-icons/hi2';
 import Button from '@/components/ui/Button';
 import { categoryApi } from '../../categories/services/category.service';
@@ -9,11 +9,13 @@ import Swal from 'sweetalert2';
 import PageContainer from '@/components/layouts/PageContainer';
 import SearchableSelect from '@/components/ui/SearchableSelect';
 
-export default function AddBrandPage() {
+export default function EditBrandPage() {
   const navigate = useNavigate();
+  const { id } = useParams();
 
   const [categories, setCategories] = useState([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingBrand, setLoadingBrand] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [previewUrl, setPreviewUrl] = useState('');
@@ -23,6 +25,7 @@ export default function AddBrandPage() {
     description: '',
     categoryID: '',
     image: null,
+    currentImageUrl: '',
   });
 
   useEffect(() => {
@@ -41,12 +44,13 @@ export default function AddBrandPage() {
 
   const handleRemoveImage = () => {
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setForm(f => ({ ...f, image: null }));
+    setForm(f => ({ ...f, image: null, currentImageUrl: '' }));
     setPreviewUrl('');
   };
 
   const normalizeList = (response) => {
     const raw = Array.isArray(response) ? response : (response?.data?.payload ?? response?.payload ?? response?.data ?? response?.content ?? response?.items ?? []);
+    console.log("Js",raw);
     return raw
       .map(item => (item?.data != null ? item.data : item))
       .filter(item => item && item.id != null);
@@ -56,7 +60,8 @@ export default function AddBrandPage() {
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
-        const res = await categoryApi.getAll(0, 1000);
+        const res = await categoryApi.getAll(0, 100);
+        // console.log("Js",res);
         setCategories(normalizeList(res));
       } catch (err) {
         console.error('Failed to load categories:', err);
@@ -67,6 +72,41 @@ export default function AddBrandPage() {
     };
     void fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (!id || categories.length === 0) return;
+
+    const fetchBrand = async () => {
+      try {
+        setLoadingBrand(true);
+        setError('');
+        const res = await brandService.getById(id);
+        const payloadData = res?.data?.payload ?? res?.payload ?? res?.data ?? [];
+        const brand = Array.isArray(payloadData) ? payloadData[0] : payloadData;
+
+        if (brand) {
+          const matchedCategory = categories.find(cat => cat.name === brand.category_name);
+
+          setForm({
+            name: brand.name ?? '',
+            description: brand.description ?? '',
+            categoryID: String(
+              brand.categoryId ?? brand.category_id ?? brand.category?.id ?? matchedCategory?.id ?? ''
+            ),
+            image: null,
+            currentImageUrl: brand.image ?? '',
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load brand:', err);
+        setError('Failed to load brand details.');
+      } finally {
+        setLoadingBrand(false);
+      }
+    };
+
+    void fetchBrand();
+  }, [id, categories]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -89,19 +129,19 @@ export default function AddBrandPage() {
 
     try {
       setSubmitting(true);
-      await brandService.create({ ...payload, image: form.image ?? undefined });
+      await brandService.update(id, { ...payload, file: form.image ?? undefined });
       Swal.fire({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
         timer: 3000,
         icon: 'success',
-        title: 'Brand created successfully',
+        title: 'Brand updated successfully',
       });
       navigate('/dashboard/brands');
     } catch (err) {
-      console.error('Failed to save brand:', err);
-      setError(err?.response?.data?.message || err?.message || 'Failed to save brand.');
+      console.error('Failed to update brand:', err);
+      setError(err?.response?.data?.message || err?.message || 'Failed to update brand.');
     } finally {
       setSubmitting(false);
     }
@@ -111,13 +151,13 @@ export default function AddBrandPage() {
     <PageContainer>
       <div className="flex flex-col justify-between gap-4 py-4 sm:flex-row sm:items-center">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900">Add Brand</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Edit Brand</h2>
           <div className="mt-1 flex items-center gap-2 text-xs font-medium text-slate-500">
             <Link to="/dashboard" className="transition-colors hover:text-blue-600">Dashboard</Link>
             <span className="text-slate-300">›</span>
             <Link to="/dashboard/brands" className="transition-colors hover:text-blue-600">Brands</Link>
             <span className="text-slate-300">›</span>
-            <span className="text-slate-400">Add Brand</span>
+            <span className="text-slate-400">Edit Brand</span>
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -125,7 +165,7 @@ export default function AddBrandPage() {
             Cancel
           </Button>
           <Button type="submit" form="brand-form" className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm" loading={submitting}>
-            Save Brand
+            Update Brand
           </Button>
         </div>
       </div>
@@ -140,7 +180,7 @@ export default function AddBrandPage() {
         <div className="space-y-6 lg:col-span-2">
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <h3 className="text-base font-semibold text-slate-900">Brand Information</h3>
-            <p className="mb-6 mt-1 text-sm text-slate-500">Enter the details of the brand you want to add.</p>
+            <p className="mb-6 mt-1 text-sm text-slate-500">Update the details of the brand.</p>
 
             <div className="space-y-5">
               <div>
@@ -199,10 +239,10 @@ export default function AddBrandPage() {
             <h3 className="text-base font-semibold text-slate-900">Brand Logo</h3>
             <p className="mb-4 mt-1 text-sm text-slate-500">Upload a logo for the brand.</p>
 
-            {previewUrl && (
+            {(previewUrl || form.currentImageUrl) && (
               <div className="relative mb-4 flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 p-4">
                 <img
-                  src={previewUrl}
+                  src={previewUrl || form.currentImageUrl}
                   alt="Brand logo preview"
                   className="h-32 w-32 rounded-lg object-contain"
                 />
@@ -231,7 +271,7 @@ export default function AddBrandPage() {
                 />
               </label>
               <p className="mt-3 text-xs text-slate-500">
-                {form.image ? form.image.name : 'No image selected'}
+                {form.image ? form.image.name : (form.currentImageUrl ? 'Using current image' : 'No image selected')}
               </p>
               <p className="mt-4 text-[10px] uppercase tracking-wide text-slate-400">
                 PNG, JPG, SVG up to 2MB. Recommended size: 512x512px
