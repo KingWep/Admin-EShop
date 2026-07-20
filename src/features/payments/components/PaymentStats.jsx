@@ -32,8 +32,19 @@ function OverviewCard({ icon, iconBg, iconRing, label, value, growth }) {
   );
 }
 
+import { StatCardSkeleton } from '@/components/ui/Skeleton';
+
 export default function PaymentStats({ stats }) {
-  if (!stats) return null;
+  if (!stats) {
+    return (
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4 mb-6">
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+        <StatCardSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-2 gap-4 xl:grid-cols-4 mb-6">

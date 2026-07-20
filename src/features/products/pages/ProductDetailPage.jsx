@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { Button, PageHeader, Badge } from '@/components/ui';
 import { Card } from '@/components/ui/Card';
 import { productService } from '@/features/products/services/product.service';
+import { brandService } from '@/features/brands/services/brand.service';
 import PageContainer from '@/components/layouts/PageContainer';
 import { ProductDetailSkeleton } from '@/components/ui/Skeleton';
 
@@ -25,8 +26,30 @@ export default function ProductDetailPage() {
         });
         
         if (mounted) {
+          let prod = null;
+          // Support both res.data (if single object) or res.data.payload (if list)
           if (res.data && res.data.id) {
-            setProduct(res.data);
+            prod = res.data;
+          } else if (res.data?.payload && res.data.payload.length > 0) {
+            prod = res.data.payload[0];
+          }
+
+          if (prod) {
+            if (prod.subcategoryId) {
+              try {
+                const brandRes = await brandService.getAll(1, 1000);
+                const data = brandRes?.data?.payload || brandRes?.data?.content || brandRes?.data || [];
+                const bList = Array.isArray(data) ? data : (data.payload || []);
+                const found = bList.find(b => String(b.id) === String(prod.subcategoryId));
+                if (found) {
+                  prod.resolvedBrand = found.name;
+                  prod.resolvedCategory = found.category_name;
+                }
+              } catch (e) {
+                console.error("Failed to load brand data", e);
+              }
+            }
+            setProduct(prod);
           } else {
             setError('Product not found.');
           }
@@ -107,6 +130,20 @@ export default function ProductDetailPage() {
                   {product.description || 'No description provided.'}
                 </p>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <h3 className="text-sm font-medium text-slate-500">Created At</h3>
+                  <p className="mt-1 text-sm text-slate-900">
+                    {product.createdAt ? new Date(product.createdAt).toLocaleString() : (product.created_at || 'N/A')}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-slate-500">Updated At</h3>
+                  <p className="mt-1 text-sm text-slate-900">
+                    {product.updated_at ? new Date(product.updated_at).toLocaleString() : 'N/A'}
+                  </p>
+                </div>
+              </div>
             </div>
           </Card>
 
@@ -178,14 +215,14 @@ export default function ProductDetailPage() {
               <div className="pt-4 border-t border-slate-100">
                 <h3 className="text-sm font-medium text-slate-500 mb-1">Category</h3>
                 <p className="text-sm font-medium text-slate-900">
-                  {product.category?.name || product.sub_category?.category?.name || 'Uncategorized'}
+                  {product.resolvedCategory || product.category?.name || product.sub_category?.category?.name || 'Uncategorized'}
                 </p>
               </div>
 
               <div className="pt-4 border-t border-slate-100">
-                <h3 className="text-sm font-medium text-slate-500 mb-1">Sub-Category</h3>
+                <h3 className="text-sm font-medium text-slate-500 mb-1">Sub-Category / Brand</h3>
                 <p className="text-sm font-medium text-slate-900">
-                  {product.sub_category?.name || 'N/A'}
+                  {product.resolvedBrand || product.brand?.name || product.sub_category?.name || 'N/A'}
                 </p>
               </div>
             </div>

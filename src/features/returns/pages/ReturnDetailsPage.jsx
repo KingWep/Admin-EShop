@@ -11,8 +11,8 @@ import returnService from '../services/return.service';
 
 export default function ReturnDetailsPage() {
   const { id } = useParams();
-  
-  const { data, loading, error, refetch } = useReturnDetails(id);
+
+  const { data, history, loading, error, refetch } = useReturnDetails(id);
   const [actionLoading, setActionLoading] = useState(false);
 
   const status = (data?.status || 'PENDING').toUpperCase();
@@ -20,9 +20,29 @@ export default function ReturnDetailsPage() {
   // API handlers
   const handleApprove = async () => {
     if (actionLoading) return;
+
+    const { value: remark, isConfirmed } = await Swal.fire({
+      title: 'Approve Return',
+      html: `
+        <p style="margin-bottom:12px;font-size:14px;color:#475569">Add an approval remark (optional)</p>
+        <textarea id="swal-remark" placeholder="e.g. Return meets policy requirements..." rows="4"
+          style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13.5px;color:#1e293b;resize:vertical;outline:none;font-family:inherit"
+        ></textarea>
+      `,
+      showCancelButton: true,
+      confirmButtonColor: '#16a34a',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: '✓ Approve Return',
+      cancelButtonText: 'Cancel',
+      focusConfirm: false,
+      preConfirm: () => document.getElementById('swal-remark').value.trim() || null,
+    });
+
+    if (!isConfirmed) return;
+
     setActionLoading(true);
     try {
-      await returnService.approve(id);
+      await returnService.approve(id, { remark });
       Swal.fire({
         toast: true,
         position: 'top-end',
@@ -48,20 +68,36 @@ export default function ReturnDetailsPage() {
 
   const handleReject = async () => {
     if (actionLoading) return;
-    const result = await Swal.fire({
-      title: 'Reject Return?',
-      text: "Are you sure you want to reject this return?",
-      icon: 'warning',
+
+    const { value: remark, isConfirmed } = await Swal.fire({
+      title: 'Reject Return',
+      html: `
+        <p style="margin-bottom:12px;font-size:14px;color:#475569">Please provide a reason for rejecting this return <span style="color:#dc2626">*</span></p>
+        <textarea id="swal-remark" placeholder="e.g. Item shows signs of intentional damage..." rows="4"
+          style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13.5px;color:#1e293b;resize:vertical;outline:none;font-family:inherit"
+        ></textarea>
+      `,
       showCancelButton: true,
       confirmButtonColor: '#dc2626',
       cancelButtonColor: '#64748b',
-      confirmButtonText: 'Yes, reject it'
+      confirmButtonText: '✕ Reject Return',
+      cancelButtonText: 'Cancel',
+      focusConfirm: false,
+      preConfirm: () => {
+        const val = document.getElementById('swal-remark').value.trim();
+        if (!val) {
+          Swal.showValidationMessage('A rejection reason is required');
+          return false;
+        }
+        return val;
+      },
     });
-    if (!result.isConfirmed) return;
-    
+
+    if (!isConfirmed) return;
+
     setActionLoading(true);
     try {
-      await returnService.reject(id);
+      await returnService.reject(id, { remark });
       Swal.fire({
         toast: true,
         position: 'top-end',
@@ -87,9 +123,36 @@ export default function ReturnDetailsPage() {
 
   const handleReceive = async () => {
     if (actionLoading) return;
+
+    const { value: remark, isConfirmed } = await Swal.fire({
+      title: 'Mark as Received',
+      html: `
+        <p style="margin-bottom:12px;font-size:14px;color:#475569">Confirm that the item has physically arrived. A remark is required <span style="color:#dc2626">*</span></p>
+        <textarea id="swal-remark" placeholder="e.g. Package received in good condition at warehouse..." rows="4"
+          style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13.5px;color:#1e293b;resize:vertical;outline:none;font-family:inherit"
+        ></textarea>
+      `,
+      showCancelButton: true,
+      confirmButtonColor: '#2563eb',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: '📦 Mark as Received',
+      cancelButtonText: 'Cancel',
+      focusConfirm: false,
+      preConfirm: () => {
+        const val = document.getElementById('swal-remark').value.trim();
+        if (!val) {
+          Swal.showValidationMessage('A remark is required to mark as received');
+          return false;
+        }
+        return val;
+      },
+    });
+
+    if (!isConfirmed) return;
+
     setActionLoading(true);
     try {
-      await returnService.receive(id);
+      await returnService.receive(id, { remark });
       Swal.fire({
         toast: true,
         position: 'top-end',
@@ -115,6 +178,20 @@ export default function ReturnDetailsPage() {
 
   const handleStartInspection = async () => {
     if (actionLoading) return;
+
+    const { isConfirmed } = await Swal.fire({
+      title: 'Start Inspection?',
+      text: 'This will begin the inspection process for the returned item.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#2563eb',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: 'Start Inspection',
+      cancelButtonText: 'Cancel',
+    });
+
+    if (!isConfirmed) return;
+
     setActionLoading(true);
     try {
       await returnService.startInspection(id);
@@ -143,9 +220,36 @@ export default function ReturnDetailsPage() {
 
   const handlePassInspection = async () => {
     if (actionLoading) return;
+
+    const { value: remark, isConfirmed } = await Swal.fire({
+      title: 'Pass Inspection',
+      html: `
+        <p style="margin-bottom:12px;font-size:14px;color:#475569">Provide inspection notes before marking as passed <span style="color:#dc2626">*</span></p>
+        <textarea id="swal-remark" placeholder="e.g. Item is in perfect condition, no damage found..." rows="4"
+          style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13.5px;color:#1e293b;resize:vertical;outline:none;font-family:inherit"
+        ></textarea>
+      `,
+      showCancelButton: true,
+      confirmButtonColor: '#16a34a',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: '✓ Pass Inspection',
+      cancelButtonText: 'Cancel',
+      focusConfirm: false,
+      preConfirm: () => {
+        const val = document.getElementById('swal-remark').value.trim();
+        if (!val) {
+          Swal.showValidationMessage('Inspection notes are required');
+          return false;
+        }
+        return val;
+      },
+    });
+
+    if (!isConfirmed) return;
+
     setActionLoading(true);
     try {
-      await returnService.completeInspection(id);
+      await returnService.completeInspection(id, { passed: true, remark });
       Swal.fire({
         toast: true,
         position: 'top-end',
@@ -168,10 +272,65 @@ export default function ReturnDetailsPage() {
       setActionLoading(false);
     }
   };
-  
+
+  const handleFailInspection = async () => {
+    if (actionLoading) return;
+
+    const { value: remark, isConfirmed } = await Swal.fire({
+      title: 'Fail Inspection',
+      html: `
+        <p style="margin-bottom:12px;font-size:14px;color:#475569">Provide reason for failing this inspection <span style="color:#dc2626">*</span></p>
+        <textarea id="swal-remark" placeholder="e.g. Item has water damage, warranty is voided..." rows="4"
+          style="width:100%;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13.5px;color:#1e293b;resize:vertical;outline:none;font-family:inherit"
+        ></textarea>
+      `,
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#64748b',
+      confirmButtonText: '✕ Fail Inspection',
+      cancelButtonText: 'Cancel',
+      focusConfirm: false,
+      preConfirm: () => {
+        const val = document.getElementById('swal-remark').value.trim();
+        if (!val) {
+          Swal.showValidationMessage('A failure reason is required');
+          return false;
+        }
+        return val;
+      },
+    });
+
+    if (!isConfirmed) return;
+
+    setActionLoading(true);
+    try {
+      await returnService.completeInspection(id, { passed: false, remark });
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'success',
+        title: 'Inspection marked as failed',
+      });
+      await refetch();
+    } catch (err) {
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        icon: 'error',
+        title: err?.response?.data?.message || err.message || 'Failed to complete inspection',
+      });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   // Define Steps
   const stepIds = ['REQUESTED', 'APPROVED', 'RECEIVED', 'INSPECTING', 'COMPLETED'];
-  
+
   const isRequested = status === 'REQUESTED' || status === 'PENDING';
   const isApproved = status === 'APPROVED';
   const isReceived = status === 'RECEIVED' || status === 'PENDING_INSPECTION';
@@ -217,7 +376,7 @@ export default function ReturnDetailsPage() {
   if (currentIndex >= 2) timeline.unshift({ status: 'Item Received', date: '---', author: 'Warehouse Scan', color: 'blue' });
   if (currentIndex >= 3) timeline.unshift({ status: 'Inspection Started', date: '---', author: 'Warehouse Staff', color: 'blue' });
   if (currentIndex >= 4) {
-    timeline.shift(); 
+    timeline.shift();
     timeline.unshift(
       { status: 'Refund/Replacement Processed', date: data?.completed_at ? new Date(data.completed_at).toLocaleDateString() : '---', author: 'Automatic', color: 'green' },
       { status: 'Inventory Adjusted', date: '---', author: 'Automatic', color: 'green' },
@@ -234,9 +393,9 @@ export default function ReturnDetailsPage() {
       <div className="w-full bg-white px-8 py-7 rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.02)] mb-6">
         <div className="flex items-center justify-between relative px-4">
           <div className="absolute top-3 left-4 right-4 h-[2px] bg-slate-100 z-0"></div>
-          
+
           {currentIndex >= 0 && (
-            <div 
+            <div
               className="absolute top-3 left-4 h-[2px] bg-green-500 z-0 transition-all duration-500"
               style={{ width: `calc(${(currentIndex / (stepIds.length - 1)) * 100}% - ${currentIndex === 0 ? 0 : (currentIndex === stepIds.length - 1 ? 2 : 1)}rem)` }}
             ></div>
@@ -252,8 +411,8 @@ export default function ReturnDetailsPage() {
                 <div className={cn(
                   "w-6 h-6 rounded-full flex items-center justify-center text-white border-[2px] transition-colors duration-300",
                   isCompletedStep ? "bg-green-500 border-green-500" :
-                  isCurrentStep ? "bg-white border-blue-600 shadow-[0_0_0_4px_rgba(37,99,235,0.1)]" :
-                  "bg-white border-slate-200"
+                    isCurrentStep ? "bg-white border-blue-600 shadow-[0_0_0_4px_rgba(37,99,235,0.1)]" :
+                      "bg-white border-slate-200"
                 )}>
                   {isCompletedStep ? (
                     <HiCheck className="w-4 h-4" />
@@ -264,8 +423,8 @@ export default function ReturnDetailsPage() {
                 <div className="flex flex-col items-center mt-3">
                   <span className={cn(
                     "text-[11px] font-bold tracking-wider",
-                    isCompletedStep ? "text-green-600" : 
-                    isCurrentStep ? "text-blue-600" : "text-slate-400"
+                    isCompletedStep ? "text-green-600" :
+                      isCurrentStep ? "text-blue-600" : "text-slate-400"
                   )}>
                     {step}
                   </span>
@@ -279,9 +438,124 @@ export default function ReturnDetailsPage() {
   };
 
   if (loading) {
+    const Bone = ({ className }) => (
+      <div className={`bg-slate-100 rounded-lg animate-pulse ${className}`} />
+    );
+
     return (
       <PageContainer>
-        <div className="flex justify-center items-center h-64 text-slate-500">Loading return details...</div>
+        {/* Skeleton: Page header */}
+        <div className="mb-6">
+          <Bone className="h-4 w-48 mb-3" />
+          <Bone className="h-7 w-56" />
+        </div>
+
+        {/* Skeleton: Stepper */}
+        <div className="w-full bg-white px-8 py-7 rounded-2xl border border-slate-200 mb-6">
+          <div className="flex items-center justify-between relative px-4">
+            <div className="absolute top-3 left-4 right-4 h-[2px] bg-slate-100" />
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="relative z-10 flex flex-col items-center w-24">
+                <Bone className="w-6 h-6 rounded-full" />
+                <Bone className="mt-3 h-2.5 w-16" />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Skeleton: Top 3 cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200">
+              <Bone className="h-4 w-32 mb-4" />
+              <Bone className="h-8 w-24 mb-2" />
+              <Bone className="h-3.5 w-40" />
+            </div>
+          ))}
+        </div>
+
+        {/* Skeleton: Main two-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left column */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* Return Information card */}
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100">
+                <Bone className="h-4 w-36" />
+              </div>
+              <div className="p-5 space-y-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="flex justify-between items-center">
+                    <Bone className="h-3.5 w-24" />
+                    <Bone className="h-3.5 w-20" />
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Action Panel card */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-5">
+              <Bone className="h-4 w-28 mb-5" />
+              <div className="flex gap-3 mb-3">
+                <Bone className="flex-1 h-10 rounded-lg" />
+                <Bone className="flex-1 h-10 rounded-lg" />
+              </div>
+              <Bone className="h-3 w-64" />
+            </div>
+          </div>
+
+          {/* Right column */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Items table card */}
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100">
+                <Bone className="h-4 w-32" />
+              </div>
+              <div className="p-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <Bone className="w-10 h-10 rounded-md flex-shrink-0" />
+                  <Bone className="h-4 w-48" />
+                </div>
+              </div>
+              <div className="p-5 flex justify-end">
+                <div className="w-72 space-y-3">
+                  <div className="flex justify-between">
+                    <Bone className="h-3.5 w-16" />
+                    <Bone className="h-3.5 w-16" />
+                  </div>
+                  <div className="flex justify-between">
+                    <Bone className="h-3.5 w-24" />
+                    <Bone className="h-3.5 w-12" />
+                  </div>
+                  <div className="pt-3 border-t border-slate-100 flex justify-between">
+                    <Bone className="h-4 w-28" />
+                    <Bone className="h-4 w-16" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Timeline card */}
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100">
+                <Bone className="h-4 w-32" />
+              </div>
+              <div className="p-6 space-y-0">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex gap-4 pb-6">
+                    <div className="flex flex-col items-center">
+                      <Bone className="w-5 h-5 rounded-full flex-shrink-0" />
+                      {i < 2 && <div className="w-[1.5px] bg-slate-100 flex-1 my-1" style={{ minHeight: 32 }} />}
+                    </div>
+                    <div className="flex-1 pt-0.5 space-y-2">
+                      <Bone className="h-3.5 w-36" />
+                      <Bone className="h-3 w-48" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </PageContainer>
     );
   }
@@ -318,12 +592,12 @@ export default function ReturnDetailsPage() {
             ${data?.amount?.toFixed(2) || '0.00'}
           </div>
           <p className="text-[13px] text-slate-500 font-medium">
-            {isRequested ? 'Awaiting approval decision' : 
-             isApproved ? 'Waiting for customer to ship the item back' :
-             isReceived ? 'Refund not yet created — pending inspection' :
-             isInspecting ? 'Inspector reviewing item condition' :
-             isCompleted ? 'Refund/Replacement process initiated' :
-             'Return was rejected'}
+            {isRequested ? 'Awaiting approval decision' :
+              isApproved ? 'Waiting for customer to ship the item back' :
+                isReceived ? 'Refund not yet created — pending inspection' :
+                  isInspecting ? 'Inspector reviewing item condition' :
+                    isCompleted ? 'Refund/Replacement process initiated' :
+                      'Return was rejected'}
           </p>
         </div>
 
@@ -353,7 +627,7 @@ export default function ReturnDetailsPage() {
 
       {/* Main Two Column Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Left Column */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.02)] overflow-hidden">
@@ -382,7 +656,7 @@ export default function ReturnDetailsPage() {
 
           <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.02)] overflow-hidden p-5 pt-4">
             <h3 className="text-[14.5px] font-semibold text-slate-900 mb-4">Action Panel</h3>
-            
+
             {isRequested && (
               <>
                 <div className="flex gap-3 mb-3">
@@ -421,7 +695,7 @@ export default function ReturnDetailsPage() {
                   <Button disabled={actionLoading} onClick={handlePassInspection} className="flex-1 bg-green-600 hover:bg-green-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg">
                     {actionLoading ? 'Processing...' : 'Mark Passed'}
                   </Button>
-                  <Button disabled={actionLoading} onClick={handleReject} className="flex-1 bg-red-600 hover:bg-red-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg">
+                  <Button disabled={actionLoading} onClick={handleFailInspection} className="flex-1 bg-red-600 hover:bg-red-700 text-white shadow-sm font-semibold text-[13px] py-2.5 rounded-lg">
                     {actionLoading ? 'Processing...' : 'Mark Failed'}
                   </Button>
                 </div>
@@ -440,7 +714,7 @@ export default function ReturnDetailsPage() {
                 </div>
               </div>
             )}
-            
+
             {isRejected && (
               <div className="bg-red-50 border border-red-100 rounded-lg p-4">
                 <div className="flex gap-3 mb-2">
@@ -484,7 +758,7 @@ export default function ReturnDetailsPage() {
                 </tbody>
               </table>
             </div>
-            
+
             <div className="p-5 flex justify-end">
               <div className="w-72 space-y-2.5 text-[13.5px] font-medium">
                 <div className="flex justify-between">
@@ -510,34 +784,75 @@ export default function ReturnDetailsPage() {
               <h3 className="text-[14.5px] font-semibold text-slate-900">Return Timeline</h3>
             </div>
             <div className="p-6">
-              <div className="space-y-0 relative">
-                {timeline.map((event, idx) => (
-                  <div key={idx} className="flex gap-4 relative">
-                    <div className="flex flex-col items-center relative z-10">
-                      <div className={cn(
-                        "w-5 h-5 rounded-full flex items-center justify-center mt-0.5",
-                        event.color === 'yellow' ? "bg-amber-100" :
-                        event.color === 'green' ? "bg-emerald-100" :
-                        "bg-blue-100"
-                      )}>
-                        <div className={cn(
-                          "w-2 h-2 rounded-full",
-                          event.color === 'yellow' ? "bg-amber-500" :
-                          event.color === 'green' ? "bg-emerald-500" :
-                          "bg-blue-500"
-                        )}></div>
+              {history.length === 0 ? (
+                <div className="text-center text-[13px] text-slate-400 py-6">No history events yet.</div>
+              ) : (
+                <div className="space-y-0 relative">
+                  {history.map((event, idx) => {
+                    // Real API fields: new_status, old_status, changed_by, changed_at, remark
+                    const newStatus = (event.new_status || '').toUpperCase();
+                    const oldStatus = (event.old_status || '').toUpperCase();
+
+                    const isGreen = ['APPROVED', 'COMPLETED', 'PASSED'].some(k => newStatus.includes(k));
+                    const isRed   = ['REJECTED', 'FAILED'].some(k => newStatus.includes(k));
+                    const isYellow = ['REQUESTED', 'CREATED'].some(k => newStatus.includes(k));
+                    const color = isGreen ? 'green' : isRed ? 'red' : isYellow ? 'yellow' : 'blue';
+
+                    // Format label e.g. "INSPECTING" → "Inspecting"
+                    const formattedNew = newStatus.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                    const formattedOld = oldStatus ? oldStatus.toLowerCase().replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : null;
+
+                    const actor = event.changed_by || 'System';
+                    const formattedDate = event.changed_at ? new Date(event.changed_at).toLocaleString() : '';
+
+                    return (
+                      <div key={idx} className="flex gap-4 relative">
+                        <div className="flex flex-col items-center relative z-10">
+                          <div className={cn(
+                            "w-5 h-5 rounded-full flex items-center justify-center mt-0.5",
+                            color === 'yellow' ? "bg-amber-100" :
+                            color === 'green'  ? "bg-emerald-100" :
+                            color === 'red'    ? "bg-red-100" :
+                            "bg-blue-100"
+                          )}>
+                            <div className={cn(
+                              "w-2 h-2 rounded-full",
+                              color === 'yellow' ? "bg-amber-500" :
+                              color === 'green'  ? "bg-emerald-500" :
+                              color === 'red'    ? "bg-red-500" :
+                              "bg-blue-500"
+                            )}></div>
+                          </div>
+                          {idx !== history.length - 1 && (
+                            <div className="w-[1.5px] bg-slate-100 my-1 absolute top-5 bottom-[-8px]"></div>
+                          )}
+                        </div>
+                        <div className="pb-6 pt-0.5 flex-1">
+                          <div className="text-[13.5px] font-semibold text-slate-900 mb-0.5">
+                            {formattedNew}
+                          </div>
+                          {formattedOld && (
+                            <div className="text-[11.5px] text-slate-400 mb-0.5">
+                              from <span className="font-medium">{formattedOld}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-[12.5px] text-slate-500">by {actor}</span>
+                            {formattedDate && (
+                              <span className="text-[11px] text-slate-400">· {formattedDate}</span>
+                            )}
+                          </div>
+                          {event.remark && (
+                            <div className="mt-2 text-[12.5px] text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100 italic">
+                              "{event.remark}"
+                            </div>
+                          )}
+                        </div>
                       </div>
-                      {idx !== timeline.length - 1 && (
-                        <div className="w-[1.5px] bg-slate-100 my-1 absolute top-5 bottom-[-8px]"></div>
-                      )}
-                    </div>
-                    <div className="pb-6 pt-0.5">
-                      <div className="text-[13.5px] font-semibold text-slate-900 mb-0.5">{event.status}</div>
-                      <div className="text-[12.5px] text-slate-500">by {event.author}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>

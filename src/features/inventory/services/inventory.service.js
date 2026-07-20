@@ -7,11 +7,12 @@ const EP = API_ENDPOINTS.INVENTORY;
 export const inventoryService = {
     /**
      * Create a new inventory record
-     * POST /api/v1/inventory
-     * @param {object} data - { sku, productId, quantity, ... }
+     * POST /api/v1/inventory?skuId={skuId}
+     * @param {number|string} skuId
+     * @param {object} data - { quantity, lowStockThreshold, warehouse_location }
      */
-    create: (data) =>
-        axiosClient.post(EP.CREATE, data),
+    create: (skuId, data) =>
+        axiosClient.post(`${EP.CREATE}?skuId=${skuId}`, data),
 
     /**
      * Get all inventory records (paginated)

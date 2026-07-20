@@ -3,10 +3,10 @@ import { formatCompact, formatPercent } from '@/utils/formatCurrency';
 import { HiArrowTrendingUp, HiArrowTrendingDown } from 'react-icons/hi2';
 
 const colorMap = {
-  indigo:  { bg: 'bg-indigo-50',  icon: 'bg-indigo-600',  text: 'text-indigo-600' },
-  emerald: { bg: 'bg-emerald-50', icon: 'bg-emerald-600', text: 'text-emerald-600' },
-  amber:   { bg: 'bg-amber-50',   icon: 'bg-amber-600',   text: 'text-amber-600' },
-  violet:  { bg: 'bg-violet-50',  icon: 'bg-violet-600',  text: 'text-violet-600' },
+  indigo:  { bg: 'bg-gradient-to-br from-indigo-500 to-indigo-600', icon: 'bg-white/20 text-white', text: 'text-indigo-600', border: 'border-indigo-100', shadow: 'shadow-indigo-500/20' },
+  emerald: { bg: 'bg-gradient-to-br from-emerald-500 to-emerald-600', icon: 'bg-white/20 text-white', text: 'text-emerald-600', border: 'border-emerald-100', shadow: 'shadow-emerald-500/20' },
+  amber:   { bg: 'bg-gradient-to-br from-amber-500 to-amber-600',   icon: 'bg-white/20 text-white', text: 'text-amber-600', border: 'border-amber-100', shadow: 'shadow-amber-500/20' },
+  violet:  { bg: 'bg-gradient-to-br from-violet-500 to-violet-600',  icon: 'bg-white/20 text-white', text: 'text-violet-600', border: 'border-violet-100', shadow: 'shadow-violet-500/20' },
 };
 
 /**
@@ -23,27 +23,41 @@ export default function StatsCard({ title, value, growth, icon, color = 'indigo'
   const isPositive = growth >= 0;
 
   return (
-    <div className="card group flex items-start gap-4 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
-      <div className={cn('flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl', colors.icon)}>
-        <span className="text-white">{icon}</span>
-      </div>
+    <div className={cn(
+      "group relative overflow-hidden rounded-2xl p-6 transition-all duration-300",
+      "border bg-white hover:-translate-y-1 hover:shadow-xl",
+      colors.border
+    )}>
+      {/* Background decoration */}
+      <div className={cn("absolute -right-6 -top-6 h-32 w-32 rounded-full opacity-10 blur-2xl transition-transform duration-500 group-hover:scale-150", colors.bg)} />
+      
+      <div className="relative z-10 flex items-start justify-between">
+        <div className="flex-1">
+          <p className="text-sm font-semibold tracking-wide text-slate-500 uppercase">{title}</p>
+          <div className="mt-3 flex items-baseline gap-2">
+            <p className="text-3xl font-extrabold text-slate-900 tracking-tight">
+              {isCurrency ? '$' : ''}{formatCompact(value || 0)}
+            </p>
+          </div>
+          
+          <div className="mt-4 flex items-center gap-2">
+            <div className={cn(
+              "flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold",
+              isPositive ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-700"
+            )}>
+              {isPositive ? <HiArrowTrendingUp className="h-3.5 w-3.5" /> : <HiArrowTrendingDown className="h-3.5 w-3.5" />}
+              {formatPercent(growth || 0)}
+            </div>
+            <span className="text-xs font-medium text-slate-400">vs last month</span>
+          </div>
+        </div>
 
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-slate-500">{title}</p>
-        <p className="mt-0.5 text-2xl font-bold text-slate-900">
-          {isCurrency ? '$' : ''}
-          {formatCompact(value)}
-        </p>
-        <div className="mt-1.5 flex items-center gap-1">
-          {isPositive ? (
-            <HiArrowTrendingUp className="h-4 w-4 text-emerald-500" />
-          ) : (
-            <HiArrowTrendingDown className="h-4 w-4 text-red-500" />
-          )}
-          <span className={cn('text-xs font-semibold', isPositive ? 'text-emerald-600' : 'text-red-600')}>
-            {formatPercent(growth)}
-          </span>
-          <span className="text-xs text-slate-400">vs last month</span>
+        <div className={cn(
+          "flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3",
+          colors.bg,
+          colors.shadow
+        )}>
+          <span className={colors.icon}>{icon}</span>
         </div>
       </div>
     </div>

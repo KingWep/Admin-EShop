@@ -125,6 +125,15 @@ const orderService = {
 
     return handleRequest(axiosClient.post(API_ENDPOINTS.ORDERS.USER_HISTORY, payload));
   },
+  /**
+   * Get canceled orders
+   * 
+   * @param {Object} params - Query parameters
+   * @returns {Promise<any>} The canceled orders list
+   */
+  getUserCancel: async (params = {}) => {
+    return handleRequest(axiosClient.post(API_ENDPOINTS.ORDERS.USER_CANCEL, params));
+  },
 
   /**
    * Update order status (Admin)
@@ -146,11 +155,11 @@ const orderService = {
    * @returns {Promise<any>} The cancellation response
    */
   cancel: async (id, userId, reason) => {
-    const payload = { id, userId };
+    const params = { id, userId };
     if (reason !== undefined && reason !== null && reason !== '') {
-      payload.reason = reason;
+      params.reason = reason;
     }
-    return handleRequest(axiosClient.post(API_ENDPOINTS.ORDERS.USER_CANCEL, payload));
+    return handleRequest(axiosClient.post(API_ENDPOINTS.ORDERS.USER_CANCEL, null, { params }));
   },
 
   /**

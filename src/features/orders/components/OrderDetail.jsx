@@ -129,10 +129,6 @@ export default function OrderDetail({ order, onUpdateStatus, onCancel }) {
             <HiOutlineArrowDownTray className="w-4 h-4" />
             Download Invoice
           </button>
-          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 transition-colors">
-            <HiOutlinePencil className="w-4 h-4" />
-            Edit Order
-          </button>
         </div>
       </div>
 

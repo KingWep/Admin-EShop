@@ -60,9 +60,9 @@ export default function StatCards({ summary = {}, loading }) {
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-6">
       {loading ? (
-        Array.from({ length: 4 }).map((_, i) => (
+        Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
             <StatCardSkeleton />
           </div>

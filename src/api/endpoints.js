@@ -68,6 +68,8 @@ export const API_ENDPOINTS = {
     DELETE: '/api/v1/inventory/delete',
     GET_ALL: '/api/v1/inventory/all/',
     RESTOCK: '/api/v1/inventory/restock', // PATCH
+    SUMMARY: '/api/v1/inventory/summary',
+    HISTORY: '/api/v1/inventory/history/{inventoryId}'
   },
 
   ORDERS: {
@@ -122,5 +124,14 @@ export const API_ENDPOINTS = {
   GET_BY_ID: '/admin/returns/{returnId}',
   GET_HISTORY: '/admin/returns/{returnId}/history',
   GET_SUMMARY: '/admin/returns/summary',
-},
+  },
+
+  REFUND: {
+   PROCESS: '/admin/refunds/{refundId}/process',
+   CANCEL: '/admin/refunds/{refundId}/cancel',
+   LIST: '/admin/refunds/list',
+   BY_ID: '/admin/refunds/{refundId}',
+   HISTORY: '/admin/refunds/{refundId}/history',
+   SUMMARY: '/admin/refunds/summary'
+  }
 };

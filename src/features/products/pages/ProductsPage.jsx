@@ -7,8 +7,9 @@ import { useSearch } from '@/hooks/useSearch';
 import { useFilter } from '@/features/products/hooks/useFilter';
 import { Button, PageHeader, DataTableCard } from '@/components/ui';
 import { HiPlus } from 'react-icons/hi2';
-import {  productStats  } from '@/features/reports/components/PageStats';
+import { productStats } from '@/features/reports/components/PageStats';
 import { productApi } from '@/features/products/services/product.service';
+import { brandService } from '@/features/brands/services/brand.service';
 import PageContainer from '@/components/layouts/PageContainer';
 import Swal from 'sweetalert2';
 
@@ -31,6 +32,22 @@ export default function ProductsPage() {
   const [pageSize, setPageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [brandsMap, setBrandsMap] = useState({});
+
+  useEffect(() => {
+    // Fetch brands once to map subcategoryId to brand and category names
+    brandService.getAll(1, 1000).then(res => {
+      const data = res?.data?.payload || res?.data?.content || res?.data || [];
+      const raw = Array.isArray(data) ? data : (data.payload || []);
+      const map = {};
+      raw.forEach(b => {
+        if (b && b.id) {
+          map[b.id] = { brand: b.name, category: b.category_name };
+        }
+      });
+      setBrandsMap(map);
+    }).catch(err => console.error("Failed to load brands map", err));
+  }, []);
 
   const { query, setQuery, debouncedQuery } = useSearch();
 
@@ -50,6 +67,25 @@ export default function ProductsPage() {
     return { criteriaType: CRITERIA_TYPE.ALL, criteriaValue: '' };
   }, [debouncedQuery, filters.category, filters.status]);
 
+  const mappedStats = useMemo(() => {
+    const total = totalItems;
+    const active = products.filter(p => p.is_active).length;
+    const lowStock = products.filter(p => p.stock > 0 && p.stock <= 10).length;
+    const outOfStock = products.filter(p => p.stock === 0).length;
+
+    return productStats.map(stat => {
+      let newValue = stat.value;
+      let badgeText = "";
+
+      if (stat.label === "Total Products") newValue = total;
+      if (stat.label === "Active Products") newValue = active;
+      if (stat.label === "Low Stock") newValue = lowStock;
+      if (stat.label === "Out of Stock") newValue = outOfStock;
+
+      return { ...stat, value: newValue, badgeText };
+    });
+  }, [products, totalItems]);
+
   // Reset ទៅ page 1 រាល់ពេល search ឬ filter ប្តូរ
   useEffect(() => {
     setPageNumber(1);
@@ -68,34 +104,13 @@ export default function ProductsPage() {
           criteria_type: criteriaType,
           criteria_value: criteriaValue,
         });
-        console.log("Product",res);
+        console.log("Product", res);
         if (isCancelled) return;
-        
+
         const { payload, total_pages, total_items } = res.data;
 
-        // Transform the nested API data into a flat format for the table
-        const formattedProducts = payload.map(product => {
-          // Find the default SKU variant, or fall back to the first variant
-          const defaultSku = product.skus?.find(s => s.is_default) || product.skus?.[0] || {};
-          
-          return {
-            id: product.id,
-            name: product.name,
-            // Fallback to a placeholder if main_image array is empty
-            image: product.main_image?.[0] || 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg',
-            sku: defaultSku.sku || 'N/A',
-            price: defaultSku.price || 0,
-            // Since quantity is null in your screenshot, we use 0 or defaultSku.quantity
-            stock: defaultSku.quantity ?? 0, 
-            is_active: product.is_active,
-            // Add defaults or fallbacks for properties missing in this API chunk
-            category: product.category?.name || 'N/A', 
-            brand: product.brand?.name || 'N/A',
-            createdAt: product.created_at || 'N/A'
-          };
-        });
-
-        setProducts(formattedProducts);
+        // We just store the raw products and total info
+        setProducts(payload || []);
         setTotalPages(total_pages);
         setTotalItems(total_items);
       } catch (err) {
@@ -111,9 +126,31 @@ export default function ProductsPage() {
       isCancelled = true;
     };
   }, [pageNumber, pageSize, criteriaType, criteriaValue]);
+
+  // Transform the nested API data into a flat format for the table
+  const formattedProducts = useMemo(() => {
+    return products.map(product => {
+      const defaultSku = product.skus?.find(s => s.is_default) || product.skus?.[0] || {};
+
+      return {
+        id: product.id,
+        name: product.name,
+        image: product.main_image?.[0] || 'https://upload.wikimedia.org/wikipedia/commons/6/65/No-Image-Placeholder.svg',
+        sku: defaultSku.sku || 'N/A',
+        price: defaultSku.price || 0,
+        stock: defaultSku.quantity ?? 0,
+        is_active: product.is_active,
+        category: brandsMap[product.subcategoryId]?.category || product.category?.name || 'N/A',
+        brand: brandsMap[product.subcategoryId]?.brand || product.brand?.name || 'N/A',
+        createdAt: product.createdAt ? new Date(product.createdAt).toLocaleString() : (product.created_at || 'N/A'),
+        updatedAt: product.updated_at ? new Date(product.updated_at).toLocaleString() : 'N/A'
+      };
+    });
+  }, [products, brandsMap]);
+
   // "inactive" មិនមាន criteria_type ដាច់ដោយឡែកទេ (មានតែ ACTIVE=4)
   // ដូច្នេះនៅតែត្រូវ filter "inactive" នៅ client-side
-  const filtered = products.filter(p => {
+  const filtered = formattedProducts.filter(p => {
     if (filters.status === 'inactive') return p.is_active !== true;
     return true;
   });
@@ -156,7 +193,8 @@ export default function ProductsPage() {
         title="Products"
         description="Manage your product inventory and pricing."
         crumbs={[{ label: 'Dashboard', path: '/' }, { label: 'Products' }]}
-        stats={productStats}
+        stats={mappedStats}
+        loading={loading}
       >
         <Link to="/dashboard/products/add">
           <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
@@ -185,8 +223,8 @@ export default function ProductsPage() {
             <>
               <div className="flex items-center gap-3 text-sm text-slate-500">
                 <span>Rows per page:</span>
-                <select 
-                  value={pageSize} 
+                <select
+                  value={pageSize}
                   onChange={(e) => setPageSize(Number(e.target.value))}
                   className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 >

@@ -1,15 +1,23 @@
 import React from 'react';
-import { HiOutlineMagnifyingGlass, HiOutlineFunnel, HiOutlineArrowDownTray, HiPlus } from 'react-icons/hi2';
+import { HiOutlineMagnifyingGlass } from 'react-icons/hi2';
 import { useCategories } from '@/features/categories/hooks/useCategories';
+import SearchableSelect from '@/components/ui/SearchableSelect';
 
 export default function BrandToolbar({
   search,
   onSearch,
   filters,
   onFilter,
-  onAdd
 }) {
   const { categories } = useCategories();
+  
+  const hasActive = !!search || !!filters.category || !!filters.status;
+
+  const handleReset = () => {
+    onSearch('');
+    onFilter('category', '');
+    onFilter('status', '');
+  };
 
   return (
     <div className="flex flex-col gap-4 border-b border-slate-200 bg-white px-5 py-5 sm:px-6 md:flex-row md:items-center md:justify-between rounded-t-xl">
@@ -25,8 +33,20 @@ export default function BrandToolbar({
         />
       </div>
 
-      {/* Right side: Actions */}
+      {/* Right side: Actions / Filters */}
       <div className="flex flex-wrap items-center gap-3">
+        <div className="w-[200px]">
+          <SearchableSelect
+            options={[
+              { label: 'All Categories', value: '' },
+              ...categories.map(cat => ({ label: cat.name, value: cat.id }))
+            ]}
+            value={filters.category || ''}
+            onChange={val => onFilter('category', val)}
+            placeholder="All Categories"
+          />
+        </div>
+
         <select
           value={filters.status || ''}
           onChange={(e) => onFilter('status', e.target.value)}
@@ -38,26 +58,14 @@ export default function BrandToolbar({
           <option value="deleted">Deleted</option>
         </select>
 
-        <select
-          value={filters.category || ''}
-          onChange={(e) => onFilter('category', e.target.value)}
-          className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-        >
-          <option value="">All Categories</option>
-          {categories?.map(cat => (
-            <option key={cat.id} value={cat.name}>{cat.name}</option>
-          ))}
-        </select>
-
-        <button className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
-          <HiOutlineFunnel className="h-4 w-4" />
-          Filter
-        </button>
-
-        <button className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors">
-          <HiOutlineArrowDownTray className="h-4 w-4" />
-          Export
-        </button>
+        {hasActive && (
+          <button 
+            onClick={handleReset}
+            className="flex items-center gap-2 rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+          >
+            Clear filters
+          </button>
+        )}
       </div>
     </div>
   );

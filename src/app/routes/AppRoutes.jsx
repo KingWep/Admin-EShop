@@ -10,6 +10,7 @@ import ReturnDetailsPage from '@/features/returns/pages/ReturnDetailsPage';
 import CancellationsPage from '@/features/cancellations/pages/CancellationsPage';
 import PaymentsPage from '@/features/payments/pages/PaymentsPage';
 import PaymentDetailPage from '@/features/payments/pages/PaymentDetailPage';
+import BakongCallbackPage from '@/features/payments/pages/BakongCallbackPage';
 import RefundsPage from '@/features/refunds/pages/RefundsPage';
 import ReportsPage from '@/features/reports/pages/ReportsPage';
 import TransactionsPage from '@/features/payments/pages/TransactionsPage';
@@ -30,6 +31,9 @@ import AddBrandPage from '@/features/brands/pages/AddBrandPage';
 import EditBrandPage from '@/features/brands/pages/EditBrandPage';
 import BrandDetailPage from '@/features/brands/pages/BrandDetailPage';
 import InventoryPage from '@/features/inventory/pages/InventoryPage';
+import AddInventoryPage from '@/features/inventory/pages/AddInventoryPage';
+import EditInventoryPage from '@/features/inventory/pages/EditInventoryPage';
+import InventoryDetailsPage from '@/features/inventory/pages/InventoryDetailsPage';
 import SettingsPage from '@/features/settings/pages/SettingsPage';
 import UsersPage from '@/features/users/pages/UsersPage';
 import NotFoundPage from '../../pages/NotFoundPage';
@@ -58,6 +62,7 @@ export default function AppRoutes() {
         {/* Payments group */}
         <Route path="payments" element={<PaymentsPage />} />
         <Route path="payments/:id" element={<PaymentDetailPage />} />
+        <Route path="payments/bakong-callback/:id" element={<BakongCallbackPage />} />
         <Route path="refunds" element={<RefundsPage />} />
         <Route path="transactions" element={<TransactionsPage />} />
         <Route path="transactions/:id" element={<TransactionDetailPage />} />
@@ -83,6 +88,9 @@ export default function AppRoutes() {
         <Route path="brands/view/:id" element={<BrandDetailPage />} />
         <Route path="brands/edit/:id" element={<EditBrandPage />} />
         <Route path="inventory" element={<InventoryPage />} />
+        <Route path="inventory/add" element={<AddInventoryPage />} />
+        <Route path="inventory/edit" element={<EditInventoryPage />} />
+        <Route path="inventory/details" element={<InventoryDetailsPage />} />
 
         {/* Reports group */}
         <Route path="sales-report" element={<ReportsPage />} />

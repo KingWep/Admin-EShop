@@ -3,6 +3,7 @@ import returnService from '../services/return.service';
 
 export function useReturnDetails(id) {
   const [data, setData] = useState(null);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -11,10 +12,20 @@ export function useReturnDetails(id) {
     setLoading(true);
     setError(null);
     try {
-      const res = await returnService.getById(id);
-            console.log('RES del', res);
-      const body = res?.data ?? res;
+      const [detailsRes, historyRes] = await Promise.all([
+        returnService.getById(id),
+        returnService.getHistory(id).catch(() => null),
+      ]);
+
+      const body = detailsRes?.data ?? detailsRes;
       setData(body?.payload ?? body);
+
+      if (historyRes) {
+        const hBody = historyRes?.data ?? historyRes;
+        // API returns { message, code, data: [...] }
+        const hPayload = hBody?.data ?? hBody?.payload ?? hBody;
+        setHistory(Array.isArray(hPayload) ? hPayload : []);
+      }
     } catch (err) {
       setError(
         err?.response?.data?.message ||
@@ -33,6 +44,7 @@ export function useReturnDetails(id) {
 
   return {
     data,
+    history,
     loading,
     error,
     refetch: fetchDetails,

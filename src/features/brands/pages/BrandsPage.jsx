@@ -71,7 +71,7 @@ export default function BrandsPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (hasActive) {
-        void fetchBrands(0, 1000);
+        void fetchBrands(1, 1000);
       } else {
         void fetchBrands(page, size);
       }
@@ -83,7 +83,7 @@ export default function BrandsPage() {
     // Fetch global stats in the background without blocking the main table
     const fetchStats = async () => {
       try {
-        const res = await brandService.getAll(0, 10000);
+        const res = await brandService.getAll(1, 10000);
         const data = res?.data || res;
         const raw = data?.payload ?? data?.content ?? data?.items ?? [];
         

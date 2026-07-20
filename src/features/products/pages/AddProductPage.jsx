@@ -199,15 +199,7 @@ export default function AddProductForm() {
                         value={variant.warehouse_location}
                         onChange={(e) => updateVariant(variant.id, 'warehouse_location', e.target.value)}
                       />
-                      <Input
-                        label="Low Stock Threshold"
-                        type="number"
-                        min="0"
-                        placeholder="5"
-                        value={variant.low_stock_threshold}
-                        onChange={(e) => updateVariant(variant.id, 'low_stock_threshold', e.target.value)}
-                      />
-                    </div>
+                      </div>
 
                     <div className="mt-5 space-y-3">
                       <label className="flex items-center gap-2 text-sm font-medium text-slate-700">

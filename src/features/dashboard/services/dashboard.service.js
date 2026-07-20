@@ -1,3 +1,36 @@
+import axiosClient from '../../../api/axiosClient';
+import { API_ENDPOINTS } from '../../../api/endpoints';
+
+export const dashboardAPI = {
+  getOrdersSummary: async () => {
+    try {
+      const res = await axiosClient.get(API_ENDPOINTS.ORDERS.SUMMARY);
+      return res.data;
+    } catch (e) {
+      console.error('Error fetching orders summary:', e);
+      return null;
+    }
+  },
+  getInventorySummary: async () => {
+    try {
+      const res = await axiosClient.get(API_ENDPOINTS.INVENTORY.SUMMARY);
+      return res.data;
+    } catch (e) {
+      console.error('Error fetching inventory summary:', e);
+      return null;
+    }
+  },
+  getRecentOrders: async () => {
+    try {
+      const res = await axiosClient.get(API_ENDPOINTS.ORDERS.GET_ALL, { params: { size: 6, page: 0 } });
+      return res.data;
+    } catch (e) {
+      console.error('Error fetching recent orders:', e);
+      return null;
+    }
+  }
+};
+
 // ─── Dashboard Stats ─────────────────────────────────────────────────────────
 export const dashboardStats = {
   totalSales: 48295,

@@ -1,162 +1,71 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState } from 'react';
+import { Plus } from 'lucide-react';
+
 import PageContainer from '@/components/layouts/PageContainer';
 import { PageHeader, DataTableCard } from '@/components/ui';
 import StatCards from '../components/StatCards';
 import Pagination from '@/components/ui/Pagination';
 import FilterBar from '../components/FilterBar';
 import InventoryTable from '../components/InventoryTable';
-import EditStockModal from '../components/EditStockModal';
-import ViewStockDrawer from '../components/ViewStockDrawer';
+import { useNavigate } from 'react-router-dom';
+import { useInventory } from '../hooks/useInventory';
 import inventoryService from '../services/inventory.service';
-
-function deriveStatus(availableQty, lowStockThreshold) {
-  if (availableQty <= 0) return 'Out of Stock';
-  if (availableQty <= lowStockThreshold) return 'Low Stock';
-  return 'In Stock';
-}
-
-
-function parseApiDate(isoString) {
-  if (!isoString) return null;
-  // Append Z only when there is no timezone info already
-  const str = /[Zz]$|[+-]\d{2}:\d{2}$/.test(isoString) ? isoString : `${isoString}Z`;
-  const d = new Date(str);
-  return isNaN(d.getTime()) ? null : d;
-}
-
-/** Format a Date object to a readable date-time string including seconds. */
-function fmtDateTime(date) {
-  if (!date) return '—';
-  return date.toLocaleString('en-US', {
-    month:   'short',
-    day:     'numeric',
-    year:    'numeric',
-    hour:    '2-digit',
-    minute:  '2-digit',
-    second:  '2-digit',
-  });
-}
-
-/** Format a Date object to date-only string. */
-function fmtDate(date) {
-  if (!date) return '—';
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day:   'numeric',
-    year:  'numeric',
-  });
-}
-
-function normalizeItem(item) {
-  const stockQty          = item.quantity          ?? 0;
-  const reservedQty       = item.reservedQuantity  ?? 0;
-  const availableQty      = item.availableQuantity ?? Math.max(0, stockQty - reservedQty);
-  const lowStockThreshold = item.lowStockThreshold ?? 10;
-
-  const name = item.productName ?? `SKU: ${item.sku ?? item.id}`;
-
-  // Use lastRestockedAt first, fall back to updatedAt for "last updated" column
-  const lastRestockedDate = parseApiDate(item.lastRestockedAt);
-  const updatedAtDate     = parseApiDate(item.updatedAt);
-  const createdAtDate     = parseApiDate(item.createdAt);
-
-  return {
-    id:               item.id,
-    name,
-    sku:              item.sku ?? '—',
-    warehouse:        item.warehouseLocation ?? '—',
-    stockQty,
-    reservedQty,
-    availableQty,
-    lowStockThreshold,
-    status:           deriveStatus(availableQty, lowStockThreshold),
-    // Formatted for display — use real server timestamps
-    lastUpdated:      fmtDateTime(lastRestockedDate ?? updatedAtDate),
-    createdAt:        fmtDate(createdAtDate),
-    // Raw ISO strings kept for tooltip / debugging
-    lastRestockedAtRaw: item.lastRestockedAt ?? null,
-    updatedAtRaw:       item.updatedAt       ?? null,
-    createdAtRaw:       item.createdAt       ?? null,
-  };
-}
+import Swal from 'sweetalert2';
 
 export default function InventoryPage() {
-  const [rawData,        setRawData]        = useState([]);
-  const [loading,        setLoading]        = useState(true);
-  const [error,          setError]          = useState(null);
-  const [page,           setPage]           = useState(0);   // 0-based (API)
-  const [pageSize]                          = useState(10);
-  const [totalPages,     setTotalPages]     = useState(1);
-  const [totalElements,  setTotalElements]  = useState(0);
-
-  const [selectedProduct,   setSelectedProduct]   = useState(null);
-  const [isEditModalOpen,   setIsEditModalOpen]   = useState(false);
-  const [isViewDrawerOpen,  setIsViewDrawerOpen]  = useState(false);
-
-  // ── Fetch ──────────────────────────────────────────────────────────────────
-  const fetchInventory = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      // API: POST /api/v1/inventory/all/  →  { content: [{ data: {...} }], totalPages, totalElements }
-      const res = await inventoryService.getAll(page, pageSize);
-      // Each element inside `content` is wrapped in a `data` key
-      const contentArray = res?.content ?? [];
-      const raw = contentArray.map(entry => entry?.data).filter(Boolean);
-      setRawData(raw);
-      setTotalPages(res?.totalPages     ?? 1);
-      setTotalElements(res?.totalElements ?? raw.length);
-    } catch (err) {
-      console.error('Failed to fetch inventory:', err);
-      setError('Failed to load inventory. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize]);
-
-  useEffect(() => {
-    void fetchInventory();
-  }, [fetchInventory]);
-
-  // ── Normalised data ────────────────────────────────────────────────────────
-  const data = useMemo(() => rawData.map(normalizeItem), [rawData]);
-
-  // ── Derived stat counts (computed from real data) ──────────────────────────
-  const statSummary = useMemo(() => ({
-    total:      totalElements,
-    inStock:    data.filter(d => d.status === 'In Stock').length,
-    lowStock:   data.filter(d => d.status === 'Low Stock').length,
-    outOfStock: data.filter(d => d.status === 'Out of Stock').length,
-  }), [data, totalElements]);
+  const navigate = useNavigate();
+  const {
+    data,
+    loading,
+    error,
+    page,
+    setPage,
+    pageSize,
+    totalPages,
+    totalElements,
+    statSummary,
+    refetch,
+  } = useInventory(0, 10);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleViewClick = (product) => {
-    setSelectedProduct(product);
-    setIsViewDrawerOpen(true);
+    navigate('/dashboard/inventory/details', { state: product });
   };
 
   const handleEditClick = (product) => {
-    setSelectedProduct(product);
-    setIsEditModalOpen(true);
+    navigate('/dashboard/inventory/edit', { state: product });
   };
 
-  const handleCloseModals = () => {
-    setIsEditModalOpen(false);
-    setIsViewDrawerOpen(false);
-  };
-
-  const handleEditFromView = (product) => {
-    setIsViewDrawerOpen(false);
-    setTimeout(() => {
-      setSelectedProduct(product);
-      setIsEditModalOpen(true);
-    }, 100);
+  const handleDelete = async (id) => {
+    try {
+      await inventoryService.delete(id);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        icon: 'success',
+        title: 'Inventory deleted successfully',
+      });
+      void refetch();
+    } catch (err) {
+      console.error('Delete inventory error:', err);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3500,
+        timerProgressBar: true,
+        icon: 'error',
+        title: err.response?.data?.message || err.message || 'Failed to delete inventory',
+      });
+    }
   };
 
   // Re-fetch after a successful save
   const handleSaved = () => {
-    handleCloseModals();
-    void fetchInventory();
+    void refetch();
   };
 
   // Pagination: UI component uses 1-based, API uses 0-based
@@ -172,15 +81,34 @@ export default function InventoryPage() {
         description="Manage stock levels and product availability."
         crumbs={[{ label: 'Dashboard', path: '/' }, { label: 'Inventory' }]}
         stats={statSummary}
-      />
+      >
+        <button
+          onClick={() => navigate('/dashboard/inventory/add')}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+        >
+          <Plus className="h-4 w-4" />
+          Create Inventory
+        </button>
+      </PageHeader>
 
-      <div className="max-w-[1600px] mx-auto pb-10">
+      <div className="space-y-6 pb-10">
         <StatCards summary={statSummary} loading={loading} />
+
+        {error && (
+          <div className="mb-4 flex items-center gap-3 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700 shadow-sm">
+            <svg className="h-5 w-5 flex-shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <p className="font-semibold">Failed to load inventory</p>
+              <p className="text-red-500 mt-0.5">{error}</p>
+            </div>
+          </div>
+        )}
 
         <DataTableCard
           toolbar={<FilterBar />}
           loading={loading}
-          error={error}
           loadingMessage="Loading inventory..."
           footer={
             data.length > 0 && (
@@ -196,30 +124,15 @@ export default function InventoryPage() {
             )
           }
         >
-          {!error && (
-            <InventoryTable
-              data={data}
-              onViewClick={handleViewClick}
-              onEditClick={handleEditClick}
-              loading={loading}
-            />
-          )}
+          <InventoryTable
+            data={data}
+            onViewClick={handleViewClick}
+            onEditClick={handleEditClick}
+            onDelete={handleDelete}
+            loading={loading}
+          />
         </DataTableCard>
       </div>
-
-      <EditStockModal
-        isOpen={isEditModalOpen}
-        onClose={handleCloseModals}
-        product={selectedProduct}
-        onSaved={handleSaved}
-      />
-
-      <ViewStockDrawer
-        isOpen={isViewDrawerOpen}
-        onClose={handleCloseModals}
-        product={selectedProduct}
-        onEditClick={handleEditFromView}
-      />
     </PageContainer>
   );
 }

@@ -16,6 +16,7 @@ export const PATHS = {
 
   // Payments
   PAYMENTS: '/dashboard/payments',
+  BAKONG_CALLBACK: '/dashboard/payments/bakong-callback/:id',
   REFUNDS: '/dashboard/refunds',
   TRANSACTIONS: '/dashboard/transactions',
 

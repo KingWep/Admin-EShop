@@ -3,6 +3,7 @@ import { paymentService } from '../services/payment.service';
 
 export function usePayments() {
   const [payments, setPayments] = useState([]);
+  const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -54,6 +55,38 @@ export function usePayments() {
       
       setPayments(raw);
       setTotalResults(res?.data?.total || raw.length);
+
+      // --- Compute Real Stats from All Payments ---
+      try {
+        const allRes = await paymentService.getAll({ page: 1, size: 10000 });
+        const allPayments = allRes?.data?.payload || [];
+        
+        let totalValue = 0, successfulValue = 0, pendingValue = 0, failedValue = 0;
+
+        allPayments.forEach(p => {
+          const amt = Number(p.amount) || 0;
+          totalValue += amt;
+          const status = String(p.status || '').toUpperCase();
+          
+          if (['COMPLETED', 'PAID', 'SUCCESS'].includes(status)) {
+            successfulValue += amt;
+          } else if (status === 'PENDING') {
+            pendingValue += amt;
+          } else if (['FAILED', 'CANCELLED'].includes(status)) {
+            failedValue += amt;
+          }
+        });
+
+        setStats({
+          total: { value: totalValue },
+          successful: { value: successfulValue },
+          pending: { value: pendingValue },
+          failed: { value: failedValue }
+        });
+      } catch (statErr) {
+        console.error('Failed to compute stats:', statErr);
+      }
+
     } catch (err) {
       console.error('Failed to fetch payments:', err);
       setError('Failed to load payments.');
@@ -89,6 +122,7 @@ export function usePayments() {
     filters,
     handleFilter,
     totalResults,
+    stats,
     refetch: fetchPayments
   };
 }

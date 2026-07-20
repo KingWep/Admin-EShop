@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Badge from '@/components/ui/Badge';
 import { formatCurrency } from '@/utils/formatCurrency';
+import { cn } from '@/utils/cn';
 import { HiOutlineEllipsisVertical } from 'react-icons/hi2';
 
 // ── Payment method badges ──────────────────────────────────────────────────────
@@ -79,10 +80,12 @@ function MethodBadge({ method }) {
 
 // ── Status config ──────────────────────────────────────────────────────────────
 const STATUS_MAP = {
+  completed: { label: 'Completed', variant: 'success' },
   paid: { label: 'Success', variant: 'success' },
   success: { label: 'Success', variant: 'success' },
   pending: { label: 'Pending', variant: 'warning' },
   failed: { label: 'Failed', variant: 'danger' },
+  cancelled: { label: 'Cancelled', variant: 'danger' },
   refunded: { label: 'Refunded', variant: 'default' },
 };
 
@@ -101,7 +104,7 @@ export default function PaymentTable({ payments, loading }) {
   };
 
   return (
-    <div className="overflow-x-auto min-h-[300px]">
+    <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-100">
         <thead>
           <tr className="bg-slate-50">
@@ -112,11 +115,14 @@ export default function PaymentTable({ payments, loading }) {
               { label: 'Payment Method' },
               { label: 'Status' },
               { label: 'Payment Date' },
-              { label: 'Action' },
+              { label: 'Action', align: 'right' },
             ].map(h => (
               <th
                 key={h.label}
-                className="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-wide text-slate-400 whitespace-nowrap"
+                className={cn(
+                  "px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-slate-400 whitespace-nowrap",
+                  h.align === 'right' ? 'text-right' : 'text-left'
+                )}
               >
                 {h.label}
               </th>
@@ -179,8 +185,8 @@ export default function PaymentTable({ payments, loading }) {
                 </td>
 
                 {/* Action */}
-                <td className="px-4 py-3.5 whitespace-nowrap">
-                  <div className="flex items-center gap-2">
+                <td className="px-4 py-3.5 whitespace-nowrap w-[1%] text-right">
+                  <div className="flex items-center justify-end gap-2">
                     <button
                       title="View Details"
                       className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-blue-600 transition-colors"
@@ -203,15 +209,21 @@ export default function PaymentTable({ payments, loading }) {
                         <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487zm0 0L19.5 7.125" />
                       </svg>
                     </button>
-                    <button
-                      title="Refund Payment"
-                      className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-red-600 transition-colors"
-                      onClick={(e) => { e.stopPropagation(); /* handle refund */ }}
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
-                      </svg>
-                    </button>
+                  
+                    {((p.payment_method || p.method || '').toLowerCase() === 'bakong' || true) && (
+                      <button
+                        title="Process Bakong Callback"
+                        className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-emerald-600 transition-colors"
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          navigate(`/dashboard/payments/bakong-callback/${p.id}`);
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+                        </svg>
+                      </button>
+                    )}
                   </div>
                 </td>
               </tr>

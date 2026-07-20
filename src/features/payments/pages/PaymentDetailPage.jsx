@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import PageContainer from '@/components/layouts/PageContainer';
-import { PageHeader } from '@/components/ui';
+import { PageHeader, PaymentDetailSkeleton } from '@/components/ui';
 import { paymentService } from '../services/payment.service';
 import Badge from '@/components/ui/Badge';
 import { formatCurrency } from '@/utils/formatCurrency';
@@ -9,6 +9,7 @@ import { HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineClock } from 'react-ic
 
 export default function PaymentDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [payment, setPayment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,7 +54,7 @@ export default function PaymentDetailPage() {
 
   if (loading) return (
     <PageContainer>
-      <div className="py-12 text-center text-slate-500">Loading payment details...</div>
+      <PaymentDetailSkeleton />
     </PageContainer>
   );
   if (error || !payment) return (
@@ -63,9 +64,25 @@ export default function PaymentDetailPage() {
   );
 
   const stStr = (payment.status || 'PENDING').toUpperCase();
-  let statusBadgeVariant = 'warning';
-  if (stStr === 'SUCCESS' || stStr === 'PAID') statusBadgeVariant = 'success';
-  else if (stStr === 'FAILED') statusBadgeVariant = 'danger';
+
+  // Real API returns: COMPLETED | SUCCESS | PAID | PENDING | FAILED | CANCELLED | REFUNDED
+  const isSuccess  = ['SUCCESS', 'PAID', 'COMPLETED'].includes(stStr);
+  const isFailed   = ['FAILED', 'CANCELLED'].includes(stStr);
+  const isPending  = !isSuccess && !isFailed;
+
+  const statusBadgeVariant = isSuccess ? 'success' : isFailed ? 'danger' : 'warning';
+
+  // Human-readable label
+  const STATUS_LABEL = {
+    COMPLETED: 'Completed',
+    SUCCESS:   'Success',
+    PAID:      'Paid',
+    PENDING:   'Pending',
+    FAILED:    'Failed',
+    CANCELLED: 'Cancelled',
+    REFUNDED:  'Refunded',
+  };
+  const statusLabel = STATUS_LABEL[stStr] ?? stStr;
 
   const formatFullDate = (dt) => {
     if (!dt) return '-';
@@ -93,7 +110,7 @@ export default function PaymentDetailPage() {
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <h3 className="text-sm font-medium text-slate-500">Payment Code: {payment.code || payment.id}</h3>
-                <Badge variant={statusBadgeVariant} className="uppercase">{stStr}</Badge>
+                <Badge variant={statusBadgeVariant}>{statusLabel}</Badge>
               </div>
             </div>
             <div className="mb-4">
@@ -101,13 +118,20 @@ export default function PaymentDetailPage() {
                 {payment.amount} {payment.currency || 'KHR'}
               </h1>
               <p className="text-sm text-slate-500 mt-2">
-                {stStr === 'FAILED' ? 'Bakong reported the payment could not be completed' : 
-                 stStr === 'SUCCESS' ? 'Confirmed paid via Bakong callback' : 
-                 'Waiting for the customer to scan and pay the KHQR code'}
+                {isFailed
+                  ? 'Bakong reported the payment could not be completed.'
+                  : isSuccess
+                  ? 'Payment confirmed and settled via Bakong callback.'
+                  : 'Waiting for the customer to scan and pay the KHQR code.'}
               </p>
             </div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
-              <span className="h-2 w-2 rounded-full bg-red-600"></span>
+            {/* Method pill — color reflects real status */}
+            <div className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold
+              ${ isSuccess ? 'bg-emerald-50 text-emerald-700' :
+                 isFailed  ? 'bg-red-50 text-red-700' :
+                             'bg-amber-50 text-amber-700' }`}>
+              <span className={`h-2 w-2 rounded-full
+                ${ isSuccess ? 'bg-emerald-500' : isFailed ? 'bg-red-500' : 'bg-amber-500' }`} />
               {payment.payment_method || 'BAKONG'} - KHQR
             </div>
           </div>
@@ -130,7 +154,7 @@ export default function PaymentDetailPage() {
               </div>
               <div className="flex justify-between py-2">
                 <span className="text-slate-500">Status</span>
-                <Badge variant={statusBadgeVariant} className="uppercase">{stStr}</Badge>
+                <Badge variant={statusBadgeVariant}>{statusLabel}</Badge>
               </div>
             </div>
           </div>
@@ -139,26 +163,28 @@ export default function PaymentDetailPage() {
           <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
             <h3 className="text-base font-bold text-slate-900 mb-6">Action Panel</h3>
             
-            {stStr === 'FAILED' && (
+            {/* ── Failed / Cancelled ──────────────────────────────────── */}
+            {isFailed && (
               <div className="rounded-xl border border-red-100 bg-red-50/50 p-5 mb-5">
                 <div className="flex items-start gap-3">
                   <HiOutlineXCircle className="h-6 w-6 text-red-600 mt-0.5" />
                   <div>
-                    <h4 className="font-semibold text-red-900">Payment failed</h4>
+                    <h4 className="font-semibold text-red-900">Payment {statusLabel}</h4>
                     <p className="text-sm text-red-700 mt-1">
-                      {payDateStr}. Callback reported a failure (QR expired before scan). Customer will need to retry checkout.
+                      {payDateStr}. Bakong callback reported a failure. Customer will need to retry checkout.
                     </p>
                   </div>
                 </div>
               </div>
             )}
-            
-            {stStr === 'SUCCESS' && (
+
+            {/* ── Success / Completed / Paid ──────────────────────────── */}
+            {isSuccess && (
               <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-5 mb-5">
                 <div className="flex items-start gap-3">
                   <HiOutlineCheckCircle className="h-6 w-6 text-emerald-600 mt-0.5" />
                   <div>
-                    <h4 className="font-semibold text-emerald-900">Payment confirmed</h4>
+                    <h4 className="font-semibold text-emerald-900">Payment {statusLabel}</h4>
                     <p className="text-sm text-emerald-700 mt-1">
                       {payDateStr}. Bakong callback verified the transaction and matched it to Order {payment.order_number || payment.order_id}.
                     </p>
@@ -166,42 +192,58 @@ export default function PaymentDetailPage() {
                 </div>
               </div>
             )}
-            
-            {stStr === 'PENDING' && (
+
+            {/* ── Pending ─────────────────────────────────────────────── */}
+            {isPending && (
               <div className="rounded-xl border border-amber-100 bg-amber-50/50 p-5 mb-5">
                 <div className="flex items-start gap-3">
                   <HiOutlineClock className="h-6 w-6 text-amber-600 mt-0.5" />
                   <div>
                     <h4 className="font-semibold text-amber-900">Waiting for Bakong confirmation</h4>
                     <p className="text-sm text-amber-700 mt-1">
-                      QR generated {payDateStr}. This status updates automatically the moment Bakong sends the payment callback — no manual action needed.
+                      QR generated {payDateStr}. Status updates automatically when Bakong sends the callback.
                     </p>
                   </div>
                 </div>
               </div>
             )}
 
-            {stStr === 'FAILED' && (
+            {/* ── Action buttons ──────────────────────────────────────── */}
+            {isFailed && (
               <>
                 <button className="w-full rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 transition-all">
                   Generate New QR
                 </button>
-                <p className="text-xs text-slate-400 mt-3 text-center">Creates a fresh KHQR code and payment code for the customer to retry.</p>
+                <button
+                  onClick={() => navigate(`/dashboard/payments/bakong-callback/${id}`)}
+                  className="w-full mt-2 rounded-xl border border-blue-200 bg-blue-50 py-2.5 text-sm font-semibold text-blue-800 shadow-sm hover:bg-blue-100 transition-all flex items-center justify-center gap-2"
+                >
+                  <HiOutlineCheckCircle className="h-4 w-4 text-blue-500" />
+                  Process Callback
+                </button>
+                <p className="text-xs text-slate-400 mt-3 text-center">Creates a fresh KHQR code for the customer to retry.</p>
               </>
             )}
-            
-            {stStr === 'PENDING' && (
+
+            {isPending && (
               <>
                 <button className="w-full rounded-xl border border-slate-200 bg-white py-2.5 text-sm font-semibold text-slate-800 shadow-sm hover:bg-slate-50 transition-all flex items-center justify-center gap-2">
                   <HiOutlineClock className="h-4 w-4 text-amber-500" />
                   Check Status Now
                 </button>
-                <p className="text-xs text-slate-400 mt-3 text-center">This calls Bakong's transaction-check API in case the callback was missed or delayed. Status still updates on its own either way.</p>
+                <button
+                  onClick={() => navigate(`/dashboard/payments/bakong-callback/${id}`)}
+                  className="w-full mt-2 rounded-xl border border-blue-200 bg-blue-50 py-2.5 text-sm font-semibold text-blue-800 shadow-sm hover:bg-blue-100 transition-all flex items-center justify-center gap-2"
+                >
+                  <HiOutlineCheckCircle className="h-4 w-4 text-blue-500" />
+                  Process Callback
+                </button>
+                <p className="text-xs text-slate-400 mt-3 text-center">Manually triggers callback processing in case the Bakong webhook was missed.</p>
               </>
             )}
-            
-            {stStr === 'SUCCESS' && (
-              <p className="text-xs text-slate-400 text-center">No action available — payment is settled. Refund flows (if any) are handled from the related Return.</p>
+
+            {isSuccess && (
+              <p className="text-xs text-slate-400 text-center">No action required — payment is settled. Refund flows are handled from the related Return.</p>
             )}
           </div>
         </div>
@@ -226,7 +268,11 @@ export default function PaymentDetailPage() {
                 <span className="text-slate-900">{payment.order_id || '-'}</span>
               </div>
               <div className="pt-2">
-                <Link to={`/dashboard/orders/${payment.order_id}`} className="text-blue-600 hover:text-blue-700 font-medium text-sm inline-flex items-center gap-1">
+                <Link 
+                  to={`/dashboard/orders/${payment.order_id || payment.order_number || payment.codeOrder}`} 
+                  state={{ userId: payment.user_id || payment.customer_id || payment.customerId || 1 }}
+                  className="text-blue-600 hover:text-blue-700 font-medium text-sm inline-flex items-center gap-1"
+                >
                   View Order <span>↗</span>
                 </Link>
               </div>
@@ -258,11 +304,15 @@ export default function PaymentDetailPage() {
             <div className="relative pl-6 space-y-6 before:absolute before:inset-y-0 before:left-2.5 before:w-px before:bg-slate-200">
               
               {/* Outcome node */}
-              {(stStr === 'SUCCESS' || stStr === 'FAILED') && (
+              {(isSuccess || isFailed) && (
                 <div className="relative">
-                  <div className={`absolute -left-[30px] top-1 h-3 w-3 rounded-full border-2 border-white ring-2 ${stStr === 'SUCCESS' ? 'bg-emerald-500 ring-emerald-100' : 'bg-red-500 ring-red-100'}`}></div>
-                  <h4 className={`text-sm font-semibold ${stStr === 'SUCCESS' ? 'text-emerald-700' : 'text-red-700'}`}>
-                    {stStr === 'SUCCESS' ? 'Payment Confirmed' : 'Payment Failed'}
+                  <div className={`absolute -left-[30px] top-1 h-3 w-3 rounded-full border-2 border-white ring-2 ${
+                    isSuccess ? 'bg-emerald-500 ring-emerald-100' : 'bg-red-500 ring-red-100'
+                  }`} />
+                  <h4 className={`text-sm font-semibold ${
+                    isSuccess ? 'text-emerald-700' : 'text-red-700'
+                  }`}>
+                    {isSuccess ? `Payment ${statusLabel}` : `Payment ${statusLabel}`}
                   </h4>
                   <p className="text-xs text-slate-500 mt-1">{payDateStr} (Bakong Callback)</p>
                 </div>

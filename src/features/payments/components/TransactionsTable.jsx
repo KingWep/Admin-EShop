@@ -61,14 +61,28 @@ const STATUS_MAP = {
 };
 
 // ── Stat Card ──────────────────────────────────────────────────────────────────
-function StatCard({ icon, iconBg, label, value, growth, prefix = '' }) {
+function StatCard({ icon, iconBg, label, value, growth, prefix = '', loading = false }) {
   const isPositive = growth >= 0;
+  
+  if (loading) {
+    return (
+      <div className="card flex items-start gap-4 p-5">
+        <div className="h-11 w-11 flex-shrink-0 rounded-xl bg-slate-100 animate-pulse" />
+        <div className="min-w-0 flex-1 space-y-2.5 py-1">
+          <div className="h-2.5 w-24 rounded bg-slate-100 animate-pulse" />
+          <div className="h-4 w-32 rounded bg-slate-100 animate-pulse" />
+          <div className="h-2 w-16 rounded bg-slate-100 animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="card flex items-start gap-4 p-5">
       <div className={cn('flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl text-white text-xl', iconBg)}>
         {icon}
       </div>
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <p className="text-xs font-medium text-slate-400 truncate">{label}</p>
         <p className="mt-0.5 text-2xl font-bold text-slate-900 tabular-nums">
           {prefix}{typeof value === 'number' && prefix === '$'
@@ -183,11 +197,11 @@ export default function TransactionsTable({ transactions = [], stats, loading = 
     <div className="space-y-5">
       {/* ── Summary Stats ── */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <StatCard icon={<HiOutlineCreditCard className="h-6 w-6" />} iconBg="bg-blue-500"    label="Total Transactions"      value={computedStats?.total?.count ?? 0}       growth={computedStats?.total?.growth} />
-        <StatCard icon={<HiOutlineCheckCircle className="h-6 w-6" />} iconBg="bg-emerald-500" label="Successful Transactions"  value={computedStats?.successful?.count ?? 0}  growth={computedStats?.successful?.growth} />
-        <StatCard icon={<HiOutlineClock className="h-6 w-6" />} iconBg="bg-amber-500"   label="Pending Transactions"     value={computedStats?.pending?.count ?? 0}     growth={computedStats?.pending?.growth} />
-        <StatCard icon={<HiOutlineXCircle className="h-6 w-6" />}  iconBg="bg-red-500"     label="Failed Transactions"      value={computedStats?.failed?.count ?? 0}      growth={computedStats?.failed?.growth} />
-        <StatCard icon={<HiOutlineCurrencyDollar className="h-6 w-6" />}  iconBg="bg-purple-500"  label="Total Amount"             value={computedStats?.totalAmount?.value ?? 0} growth={computedStats?.totalAmount?.growth} prefix="$" />
+        <StatCard loading={loading} icon={<HiOutlineCreditCard className="h-6 w-6" />} iconBg="bg-blue-500"    label="Total Transactions"      value={computedStats?.total?.count ?? 0}       growth={computedStats?.total?.growth} />
+        <StatCard loading={loading} icon={<HiOutlineCheckCircle className="h-6 w-6" />} iconBg="bg-emerald-500" label="Successful Transactions"  value={computedStats?.successful?.count ?? 0}  growth={computedStats?.successful?.growth} />
+        <StatCard loading={loading} icon={<HiOutlineClock className="h-6 w-6" />} iconBg="bg-amber-500"   label="Pending Transactions"     value={computedStats?.pending?.count ?? 0}     growth={computedStats?.pending?.growth} />
+        <StatCard loading={loading} icon={<HiOutlineXCircle className="h-6 w-6" />}  iconBg="bg-red-500"     label="Failed Transactions"      value={computedStats?.failed?.count ?? 0}      growth={computedStats?.failed?.growth} />
+        <StatCard loading={loading} icon={<HiOutlineCurrencyDollar className="h-6 w-6" />}  iconBg="bg-purple-500"  label="Total Amount"             value={computedStats?.totalAmount?.value ?? 0} growth={computedStats?.totalAmount?.growth} prefix="$" />
       </div>
 
       {/* ── Error Banner ── */}

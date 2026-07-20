@@ -22,8 +22,16 @@ export default function SearchableSelect({ options, value, onChange, placeholder
       }
     }
     
-    function handleScrollOrResize() {
+    function handleScrollOrResize(event) {
       if (isOpen) {
+        // Prevent closing if the scroll event originated from inside the portal
+        if (
+          event.type === 'scroll' &&
+          event.target instanceof Node &&
+          document.getElementById('searchable-select-portal')?.contains(event.target)
+        ) {
+          return;
+        }
         setIsOpen(false);
         setQuery('');
       }

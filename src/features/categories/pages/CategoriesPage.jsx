@@ -23,16 +23,16 @@ export default function CategoriesPage() {
     const total = totalElements; // Use the global total from pagination
     const active = categories.filter(c => c.status === 'active' || c.status === true).length;
     const inactive = categories.filter(c => c.status === 'inactive' || c.status === false).length;
-    
+
     return categoryStats.map(stat => {
       let newValue = stat.value;
       let badgeText = "";
-      
+
       if (stat.label === "Total Categories") newValue = total;
       if (stat.label === "Active Categories") newValue = active;
       if (stat.label === "Top Performing") newValue = 0;
       if (stat.label === "Inactive Categories") newValue = inactive;
-      
+
       return { ...stat, value: newValue, badgeText };
     });
   }, [categories]);
@@ -59,7 +59,7 @@ export default function CategoriesPage() {
     try {
       await categoryApi.delete(id);
       await fetchCategories({ page, size });
-      
+
       const Toast = Swal.mixin({
         toast: true,
         position: 'top-end',
@@ -147,8 +147,8 @@ export default function CategoriesPage() {
           <>
             <div className="flex items-center gap-3 text-sm text-slate-500">
               <span>Rows per page:</span>
-              <select 
-                value={size} 
+              <select
+                value={size}
                 onChange={(e) => setSize(Number(e.target.value))}
                 className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
               >

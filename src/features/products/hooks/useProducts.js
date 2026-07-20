@@ -23,7 +23,6 @@ const createVariant = (isDefault = false) => ({
     price: '',
     inventory_quantity: '',
     warehouse_location: '',
-    low_stock_threshold: '5',
     is_default: isDefault,
     operatorProductAttribute: false,
     product_attributes: [],
@@ -58,7 +57,6 @@ const buildSkuPayload = (variant) => ({
     price: parseOptionalNumber(variant.price),
     quantity: parseOptionalNumber(variant.inventory_quantity),
     is_default: variant.is_default,
-    low_stock_threshold: parseOptionalNumber(variant.low_stock_threshold),
     inventory: {
         quantity: parseOptionalNumber(variant.inventory_quantity),
         warehouse_location: variant.warehouse_location?.trim() || undefined
@@ -75,7 +73,6 @@ const apiSkuToVariant = (sku) => ({
     price: String(sku.price ?? ''),
     inventory_quantity: String(sku.inventory?.quantity ?? sku.quantity ?? ''),
     warehouse_location: sku.inventory?.warehouse_location || '',
-    low_stock_threshold: String(sku.low_stock_threshold ?? '5'),
     is_default: !!sku.is_default,
     operatorProductAttribute:
         Array.isArray(sku.product_attributes) && sku.product_attributes.length > 0,
@@ -142,6 +139,7 @@ export function useProducts(productId = null) {
     // ---- Edit-mode hydration ----
     useEffect(() => {
         if (!productId) return;
+        if (categories.length === 0) return; // Wait for categories to load
 
         let cancelled = false;
 
@@ -174,7 +172,7 @@ export function useProducts(productId = null) {
 
                 const rawSubCategoryId =
                     p.sub_category?.id ?? p.subCategory?.id ?? p.sub_category_id ??
-                    p.subCategoryId ?? p.subcategory_id ?? null;
+                    p.subCategoryId ?? p.subcategory_id ?? p.subcategoryId ?? null;
 
                 const rawCategoryId =
                     p.category?.id ?? p.category_id ?? p.categoryId ??
@@ -187,12 +185,18 @@ export function useProducts(productId = null) {
                     setSelectedCategoryId(String(rawCategoryId));
                 } else if (rawSubCategoryId != null) {
                     try {
-                        const subRes = await subCategoryApi.getById(rawSubCategoryId);
-                        const subPayload = subRes?.data ?? subRes;
-                        const subData = subPayload?.data ?? subPayload;
+                        const subRes = await subCategoryApi.getAll(1, 1000);
+                        const data = subRes?.data?.payload || subRes?.data?.content || subRes?.data || [];
+                        const bList = Array.isArray(data) ? data : (data.payload || []);
+                        const found = bList.find(b => String(b.id) === String(rawSubCategoryId));
 
-                        const parentCategoryId =
-                            subData?.category?.id ?? subData?.category_id ?? subData?.categoryId ?? null;
+                        let parentCategoryId =
+                            found?.category?.id ?? found?.category_id ?? found?.categoryId ?? null;
+
+                        if (parentCategoryId == null && found?.category_name) {
+                            const matched = categories.find(c => c.name === found.category_name);
+                            if (matched) parentCategoryId = matched.id;
+                        }
 
                         if (parentCategoryId != null) {
                             setInitialSubCategoryId(String(rawSubCategoryId));
@@ -210,7 +214,7 @@ export function useProducts(productId = null) {
         })();
 
         return () => { cancelled = true; };
-    }, [productId, setSelectedCategoryId]);
+    }, [productId, setSelectedCategoryId, categories]);
 
     // ---- Basic field handlers ----
     const handleStatusChange = (e) => {

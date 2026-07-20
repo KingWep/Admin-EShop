@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
-import { HiOutlineMagnifyingGlass, HiOutlineFunnel, HiOutlineChevronDown } from 'react-icons/hi2';
+import { useState, useEffect, useMemo } from 'react';
+import { HiOutlineMagnifyingGlass, HiOutlineFunnel, HiOutlineChevronDown, HiXMark } from 'react-icons/hi2';
 import ReturnsTable from '../components/ReturnsTable';
-import Badge from '@/components/ui/Badge';
 import { PageHeader, DataTableCard, TableSkeleton } from '@/components/ui';
 import Pagination from '@/components/ui/Pagination';
 import PageContainer from '@/components/layouts/PageContainer';
@@ -18,16 +17,19 @@ export default function ReturnsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
-
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
+  // Debounce search + reset page on search change
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(search);
       setPage(1);
-    }, 500);
+    }, 400);
     return () => clearTimeout(handler);
   }, [search]);
+
+  // Reset page when filters change
+  useEffect(() => { setPage(1); }, [statusFilter, typeFilter]);
 
   const {
     returns,
@@ -35,48 +37,70 @@ export default function ReturnsPage() {
     totalPages,
     loading,
     error,
-    refetch,
   } = useReturns({
     page,
     size,
     criteria_type: 0,
-    criteria_value: debouncedSearch
+    criteria_value: debouncedSearch,
   });
 
   const { summary, loading: summaryLoading } = useReturnSummary();
 
   const dynamicStats = summary ? [
-    { 
-      label: 'Total Returns', 
+    {
+      label: 'Total Returns',
       value: summary.total_returns ?? '0',
-      iconBgColorClass: "bg-blue-100 text-blue-600",
-      icon: <PackageX size={24} />
+      iconBgColorClass: 'bg-blue-100 text-blue-600',
+      icon: <PackageX size={24} />,
     },
-    { 
-      label: 'Processed Returns', 
+    {
+      label: 'Processed Returns',
       value: summary.processed_returns ?? '0',
-      iconBgColorClass: "bg-emerald-100 text-emerald-600",
-      icon: <CheckCircle size={24} />
+      iconBgColorClass: 'bg-emerald-100 text-emerald-600',
+      icon: <CheckCircle size={24} />,
     },
-    { 
-      label: 'Pending Returns', 
+    {
+      label: 'Pending Returns',
       value: summary.pending_returns ?? '0',
-      iconBgColorClass: "bg-amber-100 text-amber-600",
-      icon: <Clock size={24} />
+      iconBgColorClass: 'bg-amber-100 text-amber-600',
+      icon: <Clock size={24} />,
     },
-    { 
-      label: 'Return Rate', 
+    {
+      label: 'Return Rate',
       value: summary.return_rate != null ? `${summary.return_rate}%` : '0%',
-      iconBgColorClass: "bg-purple-100 text-purple-600",
-      icon: <Percent size={24} />
-    }
+      iconBgColorClass: 'bg-purple-100 text-purple-600',
+      icon: <Percent size={24} />,
+    },
   ] : [{}, {}, {}, {}];
 
-  const filteredReturns = returns?.filter(r => {
-    const matchStatus = !statusFilter || (r.status || '').toLowerCase() === statusFilter.toLowerCase();
-    const matchType = !typeFilter || (r.return_type || '').toLowerCase() === typeFilter.toLowerCase();
-    return matchStatus && matchType;
-  }) || [];
+  // Client-side status + type filtering
+  const filteredReturns = useMemo(() =>
+    (returns || []).filter(r => {
+      const matchStatus = !statusFilter || (r.status || '').toLowerCase() === statusFilter.toLowerCase();
+      const matchType = !typeFilter || (r.return_type || '').toLowerCase() === typeFilter.toLowerCase();
+      return matchStatus && matchType;
+    }),
+    [returns, statusFilter, typeFilter]
+  );
+
+  const hasActiveFilter = !!search || !!statusFilter || !!typeFilter;
+
+  const handleReset = () => {
+    setSearch('');
+    setStatusFilter('');
+    setTypeFilter('');
+    setPage(1);
+  };
+
+  // Pagination values — client-side filtering overrides server totals when filters active
+  const effectiveTotal = hasActiveFilter ? filteredReturns.length : totalElements;
+  const effectiveTotalPages = hasActiveFilter ? Math.max(1, Math.ceil(filteredReturns.length / size)) : totalPages;
+  const displayedRows = hasActiveFilter
+    ? filteredReturns.slice((page - 1) * size, page * size)
+    : filteredReturns;
+
+  const fromRow = effectiveTotal === 0 ? 0 : (page - 1) * size + 1;
+  const toRow = Math.min(page * size, effectiveTotal);
 
   return (
     <PageContainer>
@@ -139,23 +163,51 @@ export default function ReturnsPage() {
               <HiOutlineChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             </div>
 
-            {/* Filters button */}
-            <div className="flex items-center gap-2 ml-auto">
-              <button className="relative flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
-                <HiOutlineFunnel className="h-4 w-4" />
-                Filters
+            {/* Reset filters button — only shown when a filter is active */}
+            {hasActiveFilter && (
+              <button
+                onClick={handleReset}
+                className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
+              >
+                <HiXMark className="h-4 w-4" />
+                Clear
               </button>
-            </div>
+            )}
           </div>
         }
+        loading={loading}
+        error={error}
+        loadingMessage="Loading returns..."
         footer={
-          <Pagination
-            pageNumber={page}
-            totalPages={totalPages}
-            pageSize={size}
-            totalResults={totalElements}
-            onPageChange={setPage}
-          />
+          <>
+            {/* Rows per page + result count */}
+            <div className="flex items-center gap-3 text-sm text-slate-500">
+              <span>Rows per page:</span>
+              <select
+                value={size}
+                onChange={e => { setSize(Number(e.target.value)); setPage(1); }}
+                className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+              <span className="hidden sm:inline text-slate-400">
+                Showing {fromRow} to {toRow} of {effectiveTotal} results
+              </span>
+            </div>
+
+            {/* Pagination */}
+            <div className="w-full sm:w-auto overflow-hidden rounded-lg border border-slate-100">
+              <Pagination
+                pageNumber={page}
+                totalPages={effectiveTotalPages}
+                pageSize={size}
+                totalResults={effectiveTotal}
+                onPageChange={setPage}
+              />
+            </div>
+          </>
         }
       >
         {loading ? (
@@ -165,7 +217,10 @@ export default function ReturnsPage() {
         ) : error ? (
           <div className="p-8 text-center text-red-500 text-sm">{error}</div>
         ) : (
-          <ReturnsTable returns={filteredReturns} onView={(row) => navigate(`/dashboard/returns/${row.return_id}`)} />
+          <ReturnsTable
+            returns={displayedRows}
+            onView={(row) => navigate(`/dashboard/returns/${row.return_id}`)}
+          />
         )}
       </DataTableCard>
     </PageContainer>

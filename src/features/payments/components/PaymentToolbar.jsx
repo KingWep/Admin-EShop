@@ -2,26 +2,25 @@ import { HiOutlineMagnifyingGlass, HiOutlineFunnel, HiArrowUpTray } from 'react-
 
 export default function PaymentToolbar({ search, onSearch, filters, onFilter }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 border-b border-slate-100">
-      <h3 className="text-sm font-semibold text-slate-800">Payment Details</h3>
-      <div className="flex flex-wrap items-center gap-2 ml-auto">
-        {/* Search */}
-        <div className="relative">
-          <HiOutlineMagnifyingGlass className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search by ID, customer..."
-            value={search}
-            onChange={e => onSearch(e.target.value)}
-            className="w-56 rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-8 pr-3 text-xs placeholder-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all"
-          />
-        </div>
+    <div className="flex flex-col gap-3 border-b border-slate-200 bg-white px-5 py-5 sm:px-6 sm:flex-row sm:items-center flex-wrap rounded-t-xl">
+      {/* Search */}
+      <div className="relative flex-1 min-w-[220px]">
+        <HiOutlineMagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Search by ID, customer..."
+          value={search}
+          onChange={e => onSearch(e.target.value)}
+          className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-9 pr-3 text-sm text-slate-700 placeholder:text-slate-400 outline-none transition-colors focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100"
+        />
+      </div>
 
+      <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
         {/* Status filter */}
         <select
           value={filters.status || ''}
           onChange={e => onFilter('status', e.target.value)}
-          className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          className="rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-3 pr-8 text-sm font-medium text-slate-600 outline-none transition-colors hover:bg-slate-100 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100"
         >
           <option value="">All Status</option>
           <option value="PAID">Success</option>
@@ -34,7 +33,7 @@ export default function PaymentToolbar({ search, onSearch, filters, onFilter }) 
         <select
           value={filters.method || ''}
           onChange={e => onFilter('method', e.target.value)}
-          className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs text-slate-600 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-100"
+          className="rounded-lg border border-slate-200 bg-slate-50 py-2.5 pl-3 pr-8 text-sm font-medium text-slate-600 outline-none transition-colors hover:bg-slate-100 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100"
         >
           <option value="">All Payment Methods</option>
           <option value="BAKONG">Bakong</option>
@@ -47,14 +46,14 @@ export default function PaymentToolbar({ search, onSearch, filters, onFilter }) 
         </select>
 
         {/* Filters button */}
-        <button className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 transition-colors">
-          <HiOutlineFunnel className="h-3.5 w-3.5" />
+        <button className="relative flex items-center justify-center gap-2 rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50">
+          <HiOutlineFunnel className="h-4 w-4" />
           Filters
         </button>
 
         {/* Export button */}
-        <button className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 transition-colors shadow-sm">
-          <HiArrowUpTray className="h-3.5 w-3.5" />
+        <button className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-indigo-600 rounded-lg shadow-sm hover:bg-indigo-700 transition-colors">
+          <HiArrowUpTray className="h-4 w-4" />
           Export
         </button>
       </div>

@@ -239,6 +239,156 @@ export function ProductDetailSkeleton() {
 }
 
 /**
+ * Full-page skeleton for the Payment Detail page.
+ * Mirrors: header | [Main Info + Transaction + Action] | [Order + Method + Timeline]
+ */
+export function PaymentDetailSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Page header */}
+      <div className="space-y-2 mb-8">
+        <SkeletonBlock className="h-8 w-48" />
+        <SkeletonBlock className="h-4 w-64" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="rounded-2xl border border-slate-100 bg-white p-6">
+             <SkeletonBlock className="h-5 w-40 mb-4" />
+             <SkeletonBlock className="h-10 w-48 mb-2" />
+             <SkeletonBlock className="h-4 w-80 mb-6" />
+             <SkeletonBlock className="h-6 w-32 rounded-full" />
+          </div>
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 space-y-4">
+             <SkeletonBlock className="h-6 w-40 mb-4" />
+             <SkeletonBlock className="h-8 w-full border-b border-slate-50" />
+             <SkeletonBlock className="h-8 w-full border-b border-slate-50" />
+             <SkeletonBlock className="h-8 w-full border-b border-slate-50" />
+          </div>
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 space-y-4">
+             <SkeletonBlock className="h-6 w-32 mb-4" />
+             <SkeletonBlock className="h-24 w-full rounded-xl" />
+          </div>
+        </div>
+        
+        {/* Right Column */}
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 space-y-4">
+            <SkeletonBlock className="h-6 w-40 mb-4" />
+            <SkeletonBlock className="h-6 w-full" />
+            <SkeletonBlock className="h-6 w-full" />
+            <SkeletonBlock className="h-6 w-full" />
+          </div>
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 space-y-4">
+            <SkeletonBlock className="h-6 w-40 mb-4" />
+            <SkeletonBlock className="h-6 w-full" />
+            <SkeletonBlock className="h-6 w-full" />
+            <SkeletonBlock className="h-6 w-full" />
+          </div>
+          <div className="rounded-2xl border border-slate-100 bg-white p-6 space-y-4">
+            <SkeletonBlock className="h-6 w-40 mb-4" />
+            <div className="pl-6 space-y-6 relative before:absolute before:inset-y-0 before:left-2.5 before:w-px before:bg-slate-200">
+               <SkeletonBlock className="h-12 w-full" />
+               <SkeletonBlock className="h-12 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Full-page skeleton for the Order Detail page.
+ * Mirrors: header | top actions | 4 info cards | [items table] + [timeline]
+ */
+export function OrderDetailSkeleton() {
+  return (
+    <div className="space-y-6">
+      {/* Title & Breadcrumbs */}
+      <div className="flex flex-col mb-4 space-y-2">
+        <SkeletonBlock className="h-7 w-40" />
+        <SkeletonBlock className="h-4 w-56" />
+      </div>
+
+      {/* Top Header Card */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <SkeletonBlock className="w-10 h-10 rounded-full" />
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <SkeletonBlock className="h-6 w-32" />
+              <SkeletonBlock className="h-5 w-20 rounded" />
+            </div>
+            <SkeletonBlock className="h-4 w-64" />
+          </div>
+        </div>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <SkeletonBlock className="h-9 w-32 rounded-lg" />
+          <SkeletonBlock className="h-9 w-36 rounded-lg" />
+          <SkeletonBlock className="h-9 w-32 rounded-lg" />
+        </div>
+      </div>
+
+      {/* 4 Top Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col h-full space-y-4">
+            <div className="flex items-center gap-2">
+              <SkeletonBlock className="w-8 h-8 rounded-full" />
+              <SkeletonBlock className="h-5 w-28" />
+            </div>
+            <div className="flex items-center gap-3">
+              <SkeletonBlock className="w-10 h-10 rounded-full" />
+              <div className="space-y-2 flex-1">
+                <SkeletonBlock className="h-4 w-3/4" />
+                <SkeletonBlock className="h-4 w-1/2" />
+              </div>
+            </div>
+            <div className="pt-2 border-t border-slate-100 space-y-2">
+              <SkeletonBlock className="h-4 w-full" />
+              <SkeletonBlock className="h-4 w-2/3" />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Grid: Items & Timeline */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-2 space-y-6">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+            <SkeletonBlock className="h-6 w-32 mb-4" />
+            <div className="space-y-4">
+              <SkeletonBlock className="h-12 w-full" />
+              <SkeletonBlock className="h-12 w-full" />
+              <SkeletonBlock className="h-12 w-full" />
+            </div>
+            <div className="pt-4 border-t border-slate-200 flex justify-end">
+               <div className="space-y-3 w-64">
+                 <SkeletonBlock className="h-4 w-full" />
+                 <SkeletonBlock className="h-4 w-full" />
+                 <SkeletonBlock className="h-5 w-full" />
+               </div>
+            </div>
+          </div>
+        </div>
+        <div className="xl:col-span-1">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+            <SkeletonBlock className="h-6 w-40 mb-4" />
+            <div className="pl-4 space-y-6 relative before:absolute before:inset-y-0 before:left-2 before:w-px before:bg-slate-200">
+               <SkeletonBlock className="h-10 w-full" />
+               <SkeletonBlock className="h-10 w-full" />
+               <SkeletonBlock className="h-10 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
  * Generic skeleton block.
  */
 export default SkeletonBlock;

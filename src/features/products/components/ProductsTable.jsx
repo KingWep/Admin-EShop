@@ -105,6 +105,10 @@ export default function ProductsTable({ products, onDelete, loading }) {
       render: val => <span className="text-sm text-slate-500">{val}</span>,
     },
     {
+      key: 'updatedAt', label: 'Updated At', sortable: true,
+      render: val => <span className="text-sm text-slate-500">{val}</span>,
+    },
+    {
       key: 'actions', label: 'Actions', align: 'right',
       render: (_, row) => (
         <div className="flex items-center justify-end gap-1">

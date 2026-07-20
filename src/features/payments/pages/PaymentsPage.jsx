@@ -1,4 +1,4 @@
-import { PageHeader, DataTableCard } from '@/components/ui';
+import { PageHeader, DataTableCard, TableSkeleton } from '@/components/ui';
 import PageContainer from '@/components/layouts/PageContainer';
 import Pagination from '@/components/ui/Pagination';
 import { paymentStats } from '../services/payment.service';
@@ -20,7 +20,8 @@ export default function PaymentsPage() {
     handleSearch,
     filters,
     handleFilter,
-    totalResults
+    totalResults,
+    stats
   } = usePayments();
 
   return (
@@ -34,7 +35,7 @@ export default function PaymentsPage() {
         ]}
       />
       
-      <PaymentStats stats={paymentStats} />
+      <PaymentStats stats={stats} />
 
       <DataTableCard
         toolbar={
@@ -49,20 +50,8 @@ export default function PaymentsPage() {
         error={error}
         loadingMessage="Loading payments..."
         footer={
-          <>
-            <div className="flex items-center gap-3 text-sm text-slate-500">
-              <span>Rows per page:</span>
-              <select 
-                value={size} 
-                onChange={(e) => { setSize(Number(e.target.value)); setPage(1); }}
-                className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-              >
-                <option value={10}>10</option>
-                <option value={20}>20</option>
-                <option value={50}>50</option>
-              </select>
-            </div>
-            <div className="w-full sm:w-auto overflow-hidden rounded-lg border border-slate-100">
+          (Math.max(1, Math.ceil(totalResults / size)) > 1 || totalResults > 0) && (
+            <div className="w-full sm:w-auto overflow-hidden rounded-lg border border-slate-100 ml-auto">
               <Pagination
                 pageNumber={page}
                 totalPages={Math.max(1, Math.ceil(totalResults / size))}
@@ -71,13 +60,19 @@ export default function PaymentsPage() {
                 onPageChange={setPage}
               />
             </div>
-          </>
+          )
         }
       >
-        <PaymentTable
-          payments={payments}
-          loading={loading}
-        />
+        {loading && payments.length === 0 ? (
+          <div className="p-4">
+            <TableSkeleton rows={size} cols={7} />
+          </div>
+        ) : (
+          <PaymentTable
+            payments={payments}
+            loading={loading}
+          />
+        )}
       </DataTableCard>
     </PageContainer>
   );

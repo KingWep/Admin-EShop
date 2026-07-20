@@ -15,13 +15,13 @@ export function useCategories(initialParams = {}) {
       setError('');
       const p = params.page !== undefined ? params.page : 0;
       const s = params.size !== undefined ? params.size : 1000;
-      
+
       const res = await categoryApi.getAll(p, s);
-      console.log("Res Cate",res);
-      const raw = Array.isArray(res) 
-        ? res 
+      console.log("Res Cate", res);
+      const raw = Array.isArray(res)
+        ? res
         : (res?.data?.payload ?? res?.payload ?? res?.data ?? res?.content ?? res?.items ?? []);
-      
+
       if (!Array.isArray(res)) {
         setTotalPages(res.totalPages ?? res.total_pages ?? Math.ceil((res.totalElements ?? res.total ?? raw.length) / s) ?? 1);
         setTotalElements(res.totalElements ?? res.total ?? raw.length ?? 0);

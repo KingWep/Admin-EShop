@@ -16,16 +16,45 @@ export function useOrderDetail(orderId, userId = 1) {
       // Depending on API response, unwrap the actual order object
       setOrder(data.data || data);
     } catch (err) {
-      console.error('Failed to fetch order details:', err);
-      setError(err?.message || 'Failed to fetch order details');
-      Swal.fire({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        icon: 'error',
-        title: 'Failed to load order details',
-      });
+      // Fallback: if user-specific fetch fails (due to wrong/missing userId from router state),
+      // try to fetch it generically by ID or Number
+      try {
+        const fallbackData = await orderService.getById(orderId);
+        setOrder(fallbackData.data || fallbackData);
+        setError(null);
+      } catch (fallbackErr) {
+        try {
+          const numberFallback = await orderService.getByNumber(orderId);
+          setOrder(numberFallback.data || numberFallback);
+          setError(null);
+        } catch (numErr) {
+          try {
+            // Ultimate fallback: Fetch all and filter (since getById might be 404 on backend)
+            const allOrdersData = await orderService.getAll({ page: 1, size: 200 });
+            const allOrders = Array.isArray(allOrdersData) ? allOrdersData : (allOrdersData?.payload || allOrdersData?.data || []);
+            const found = allOrders.find(o => String(o.id) === String(orderId) || String(o.order_number) === String(orderId) || String(o.codeOrder) === String(orderId));
+            
+            if (found) {
+              setOrder(found);
+              setError(null);
+            } else {
+              throw new Error('Order not found in list');
+            }
+          } catch (listErr) {
+            const allErrors = `User fetch: ${err?.response?.data?.message || err?.message}. ID fetch: ${fallbackErr?.response?.data?.message || fallbackErr?.message}. Num fetch: ${numErr?.response?.data?.message || numErr?.message}. List fetch: ${listErr.message}`;
+            console.error('All fetch attempts failed:', allErrors);
+            setError(allErrors);
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              showConfirmButton: false,
+              timer: 3000,
+              icon: 'error',
+              title: 'Failed to load order details',
+            });
+          }
+        }
+      }
     } finally {
       setLoading(false);
     }

@@ -1,7 +1,7 @@
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import OrderDetail from '../components/OrderDetail';
 import { useOrderDetail } from '../hooks/useOrderDetail';
-import { PageHeader } from '@/components/ui';
+import { PageHeader, OrderDetailSkeleton } from '@/components/ui';
 import PageContainer from '@/components/layouts/PageContainer';
 
 
@@ -14,7 +14,11 @@ export default function OrderDetailPage() {
   const { order, loading, error, updateStatus, cancelOrder } = useOrderDetail(id, userId);
 
   if (loading) {
-    return <div className="flex justify-center p-8 text-slate-500">Loading order details...</div>;
+    return (
+      <PageContainer>
+        <OrderDetailSkeleton />
+      </PageContainer>
+    );
   }
 
   if (error || !order) {

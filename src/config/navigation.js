@@ -5,9 +5,9 @@
 
 export const NAV_ITEMS = [
   { path: '/dashboard', label: 'Dashboard', icon: 'dashboard', group: 'overview' },
-  { path: '/dashboard/orders', label: 'Orders', icon: 'orders', group: 'orders', badge: 128 },
-  { path: '/dashboard/returns', label: 'Returns', icon: 'returns', group: 'orders', badge: 12 },
-  { path: '/dashboard/cancellations', label: 'Cancellations', icon: 'cancellations', group: 'orders', badge: 8 },
+  { path: '/dashboard/orders', label: 'Orders', icon: 'orders', group: 'orders' },
+  { path: '/dashboard/returns', label: 'Returns', icon: 'returns', group: 'orders' },
+  // { path: '/dashboard/cancellations', label: 'Cancellations', icon: 'cancellations', group: 'orders' },
   { path: '/dashboard/payments', label: 'Payment Details', icon: 'payments', group: 'payments' },
   { path: '/dashboard/refunds', label: 'Refunds', icon: 'refunds', group: 'payments' },
   { path: '/dashboard/transactions', label: 'Transactions', icon: 'transactions', group: 'payments' },

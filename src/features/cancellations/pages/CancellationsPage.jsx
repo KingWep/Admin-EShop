@@ -1,25 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PageHeader, Badge, Button } from '@/components/ui';
 import {  cancelationStats  } from '@/features/reports/components/PageStats';
 import { HiOutlineMagnifyingGlass, HiOutlineFunnel } from 'react-icons/hi2';
-import {  orders  } from '@/features/dashboard/services/dashboard.service';
+import orderService from '@/features/orders/services/order.service';
 import { formatCurrency } from '@/utils/formatCurrency';
 import { formatDate } from '@/utils/formatDate';
 import PageContainer from '@/components/layouts/PageContainer';
+import { Link } from 'react-router-dom';
 
 
 export default function CancellationsPage() {
   const [search, setSearch] = useState('');
-  
-  // Create some mock canceled orders by transforming some of the existing ones
-  const cancellations = orders.map(o => ({
-    ...o,
-    status: 'canceled',
-    cancelReason: ['Customer requested', 'Out of stock', 'Fraud suspected'][Math.floor(Math.random() * 3)],
-    cancelDate: o.date
-  })).slice(0, 5);
+  const [cancellations, setCancellations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = cancellations.filter(c => c.id.toLowerCase().includes(search.toLowerCase()));
+  useEffect(() => {
+    const fetchCancellations = async () => {
+      try {
+        setLoading(true);
+        // Fetch all orders and filter for cancelled ones
+        const response = await orderService.getAll({ page: 1, size: 500 });
+        const allData = response?.payload || response?.data || response || [];
+        const rawArray = Array.isArray(allData) ? allData : [];
+        
+        const canceledOrders = rawArray.filter(o => 
+          o.status?.toUpperCase() === 'CANCELED' || 
+          o.status?.toUpperCase() === 'CANCELLED' ||
+          o.orderStatus?.toUpperCase() === 'CANCELED'
+        );
+        
+        setCancellations(canceledOrders);
+      } catch (err) {
+        console.error('Failed to fetch cancellations:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCancellations();
+  }, []);
+
+  const filtered = cancellations.filter(c => 
+    c.id?.toString().toLowerCase().includes(search.toLowerCase()) || 
+    c.order_number?.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <PageContainer>
@@ -64,15 +87,25 @@ export default function CancellationsPage() {
             <tbody className="divide-y divide-slate-100">
               {filtered.map((item) => (
                 <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="px-6 py-4 font-medium text-blue-600">{item.id}</td>
-                  <td className="px-6 py-4">{item.customer.name}</td>
-                  <td className="px-6 py-4">{formatDate(item.cancelDate)}</td>
-                  <td className="px-6 py-4">
-                    <Badge variant="danger" dot>{item.cancelReason}</Badge>
+                  <td className="px-6 py-4 font-medium text-blue-600">
+                    {item.order_number || item.codeOrder || `#${item.id}`}
                   </td>
-                  <td className="px-6 py-4 font-medium text-slate-900">{formatCurrency(item.total)}</td>
+                  <td className="px-6 py-4">
+                    {item.customer?.name || item.user?.username || item.user?.email || 'Unknown'}
+                  </td>
+                  <td className="px-6 py-4">
+                    {formatDate(item.cancelDate || item.updated_at || item.created_at || item.date)}
+                  </td>
+                  <td className="px-6 py-4">
+                    <Badge variant="danger" dot>{item.cancelReason || item.reason || 'Canceled'}</Badge>
+                  </td>
+                  <td className="px-6 py-4 font-medium text-slate-900">
+                    {formatCurrency(item.total_amount || item.total || item.amount || 0)}
+                  </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-blue-600 hover:text-blue-800 text-xs font-semibold">View Details</button>
+                    <Link to={`/dashboard/orders/${item.id}`} state={{ userId: item.user_id || item.customer_id || 1 }} className="text-blue-600 hover:text-blue-800 text-xs font-semibold">
+                      View Details
+                    </Link>
                   </td>
                 </tr>
               ))}
